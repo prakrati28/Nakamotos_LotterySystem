@@ -40,14 +40,13 @@ contract Lottery is Ownable, ReentrancyGuard {
     uint256 public targetBlock;
     uint256 public lockedCollateral;
     mapping(address => uint256) public userTickets;                     // Needed to track refund amounts
-
+    bool private prizeClaimed;                                          // guard against double claim                      
+    
     event TicketPurchased(address indexed buyer, uint256 ticketId);
     event SaleClosed();
     event HashCommitted(bytes32 indexed hash);
     event WinnerDrawn(address indexed winner, uint256 prizeAmount);
     event PrizeClaimed(address indexed winner, uint256 amount);
-    
-    
     event OwnerSlashed();
     event RefundClaimed(address indexed participant, uint256 amount);
 
@@ -169,4 +168,54 @@ contract Lottery is Ownable, ReentrancyGuard {
 
         emit RefundClaimed(msg.sender, refundAmount);
     }
+
+    /**
+     * @notice Owner closes ticket sales, advancing phase to SaleClosed.
+     *         Must be called before commitHash().
+     */
+    function closeSale() external onlyOwner {
+        require(phase == Phase.Open, "Lottery: sale is not open");
+        require(participants.length > 0, "Lottery: no participants to close sale for");
+
+        phase = Phase.SaleClosed;
+        emit SaleClosed();
+    }
+
+    /**
+     * @notice Winner calls this to withdraw the entire prize pool.
+     *         Protected by ReentrancyGuard (inherits from OZ).
+     *         Follows checks-effects-interactions pattern.
+     */
+    function claimPrize() external nonReentrant {
+        // Access control — only the drawn winner may claim
+        require(phase == Phase.Drawn, "Lottery: prize not yet available");
+        require(msg.sender == winner, "Lottery: caller is not the winner");
+        require(!prizeClaimed, "Lottery: prize already claimed");
+
+        // Effects before interaction (CEI pattern)
+        uint256 payout = prizePool;
+        prizePool    = 0;
+        prizeClaimed = true;
+
+        // Interaction — send ETH last
+        (bool success, ) = msg.sender.call{value: payout}("");
+        require(success, "Lottery: prize transfer failed");
+
+        emit PrizeClaimed(msg.sender, payout);
+    }
+
+    //  View helpers
+
+    /// @notice Returns the total number of tickets sold.
+    function totalTickets() external view returns (uint256) {
+        return participants.length;
+    }
+
+    /// @notice Returns the ticket holder at a given index (ticket ID).
+    function getParticipant(uint256 index) external view returns (address) {
+        require(index < participants.length, "Lottery: index out of bounds");
+        return participants[index];
+    }
+
+
 }
