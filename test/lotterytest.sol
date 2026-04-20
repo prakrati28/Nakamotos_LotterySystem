@@ -4,29 +4,10 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../src/lottery.sol";
 
-/**
- * @title  LotteryTest
- * @notice Full Foundry test suite for the Lottery contract.
- *
- * Coverage targets (E. Testing — 4 Marks):
- *  [2 marks]
- *   ✓ Ticket purchases revert after sale is closed
- *   ✓ Revealing wrong secret (hash mismatch) reverts
- *   ✓ Only winner can claim the prize
- *   ✓ Prize pool exactly equals sum of all ticket payments
- *   ✓ Second call to revealAndDraw reverts
- *   ✓ Non-winner claimPrize reverts
- *
- *  [1 mark] Revert/failure test for each function
- *   (wrong caller, invalid input, wrong state)
- *
- *  [1 mark] Run `forge coverage` — all lines exercised here
- */
+
 contract LotteryTest is Test {
 
-    // ─────────────────────────────────────────────────
     //  Constants & state
-    // ─────────────────────────────────────────────────
 
     uint256 constant TICKET_PRICE = 0.1 ether;
 
@@ -43,9 +24,7 @@ contract LotteryTest is Test {
     bytes32 secret     = keccak256(abi.encodePacked("supersecret42"));
     bytes32 commitment = keccak256(abi.encodePacked(secret));
 
-    // ─────────────────────────────────────────────────
     //  Helpers
-    // ─────────────────────────────────────────────────
 
     /// @dev Deploys a fresh lottery and funds test accounts.
     function setUp() public {
@@ -94,9 +73,7 @@ contract LotteryTest is Test {
         lottery.revealAndDraw(secret);
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  1. buyTicket()
-    // ═══════════════════════════════════════════════════════════
 
     /// Happy path: ticket purchase emits event, increments pool
     function test_buyTicket_success() public {
@@ -145,9 +122,7 @@ contract LotteryTest is Test {
         lottery.buyTicket{value: 0}();
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  2. closeSale()
-    // ═══════════════════════════════════════════════════════════
 
     /// Happy path
     function test_closeSale_success() public {
@@ -189,9 +164,7 @@ contract LotteryTest is Test {
         lottery.closeSale();        // should revert
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  3. commitHash()
-    // ═══════════════════════════════════════════════════════════
 
     /// Happy path
     function test_commitHash_success() public {
@@ -252,9 +225,7 @@ contract LotteryTest is Test {
         lottery.commitHash{value: 0}(commitment);
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  4. revealAndDraw()
-    // ═══════════════════════════════════════════════════════════
 
     /// Happy path: winner is set, phase transitions, event emitted
     function test_revealAndDraw_success() public {
@@ -338,9 +309,7 @@ contract LotteryTest is Test {
         assertEq(lottery.lockedCollateral(), 0);
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  5. claimPrize()
-    // ═══════════════════════════════════════════════════════════
 
     /// [E] Only winner can claim prize
     function test_claimPrize_onlyWinnerCanClaim() public {
@@ -390,9 +359,7 @@ contract LotteryTest is Test {
         lottery.claimPrize();               // second claim must revert
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  6. Prize pool integrity
-    // ═══════════════════════════════════════════════════════════
 
     /// [E] Prize pool exactly equals sum of all ticket payments
     function test_prizePool_exactlySumOfTickets() public {
@@ -411,9 +378,7 @@ contract LotteryTest is Test {
         assertEq(address(lottery).balance, lottery.prizePool());
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  7. slashOwner()
-    // ═══════════════════════════════════════════════════════════
 
     /// Happy path: slash after deadline
     function test_slashOwner_success() public {
@@ -444,9 +409,7 @@ contract LotteryTest is Test {
         lottery.slashOwner();
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  8. claimRefund()
-    // ═══════════════════════════════════════════════════════════
 
     /// Happy path: proportional refund paid
     function test_claimRefund_success() public {
@@ -499,9 +462,7 @@ contract LotteryTest is Test {
         lottery.claimRefund();
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  9. View helpers
-    // ═══════════════════════════════════════════════════════════
 
     function test_totalTickets() public {
         assertEq(lottery.totalTickets(), 0);
@@ -519,9 +480,7 @@ contract LotteryTest is Test {
         lottery.getParticipant(0);
     }
 
-    // ═══════════════════════════════════════════════════════════
     //  10. Constructor
-    // ═══════════════════════════════════════════════════════════
 
     function test_constructor_setsTicketPrice() public view {
         assertEq(lottery.ticketPrice(), TICKET_PRICE);
