@@ -57,8 +57,6 @@ contract Lottery is Ownable, ReentrancyGuard {
     }
 
 
-   
-
     function buyTicket() external payable {
         require(phase == Phase.Open, "Lottery: sale is closed");              //sale must be in open phase
         require(msg.value == ticketPrice, "Lottery: incorrect ticket price"); //ticket price must match
@@ -69,6 +67,18 @@ contract Lottery is Ownable, ReentrancyGuard {
         userTickets[msg.sender]++; // Track individual ticket counts for refunds
 
         emit TicketPurchased(msg.sender, ticketId);
+    }
+
+     /**
+     * @notice Owner closes ticket sales, advancing phase to SaleClosed.
+     *         Must be called before commitHash().
+     */
+    function closeSale() external onlyOwner {
+        require(phase == Phase.Open, "Lottery: sale is not open");
+        require(participants.length > 0, "Lottery: no participants to close sale for");
+
+        phase = Phase.SaleClosed;
+        emit SaleClosed();
     }
 
     /*
@@ -169,17 +179,7 @@ contract Lottery is Ownable, ReentrancyGuard {
         emit RefundClaimed(msg.sender, refundAmount);
     }
 
-    /**
-     * @notice Owner closes ticket sales, advancing phase to SaleClosed.
-     *         Must be called before commitHash().
-     */
-    function closeSale() external onlyOwner {
-        require(phase == Phase.Open, "Lottery: sale is not open");
-        require(participants.length > 0, "Lottery: no participants to close sale for");
-
-        phase = Phase.SaleClosed;
-        emit SaleClosed();
-    }
+   
 
     /**
      * @notice Winner calls this to withdraw the entire prize pool.
