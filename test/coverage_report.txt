@@ -1,0 +1,59 @@
+[⠊] Compiling...
+[⠃] Compiling 25 files with Solc 0.8.33
+[⠊] Solc 0.8.33 finished in 887.58ms
+Compiler run successful!
+Analysing contracts...
+Running tests...
+
+Ran 40 tests for test/lotterytest.sol:LotteryTest
+[PASS] test_buyTicket_multipleParticipants() (gas: 229919)
+[PASS] test_buyTicket_revert_afterSaleClosed() (gas: 131676)
+[PASS] test_buyTicket_revert_wrongPrice() (gas: 22532)
+[PASS] test_buyTicket_revert_zeroValue() (gas: 15833)
+[PASS] test_buyTicket_success() (gas: 119507)
+[PASS] test_claimPrize_onlyWinnerCanClaim() (gas: 354703)
+[PASS] test_claimPrize_revert_alreadyClaimed() (gas: 357763)
+[PASS] test_claimPrize_revert_nonWinner() (gas: 344770)
+[PASS] test_claimPrize_revert_wrongPhase() (gas: 120246)
+[PASS] test_claimRefund_revert_doubleClaim() (gas: 319941)
+[PASS] test_claimRefund_revert_noTickets() (gas: 331391)
+[PASS] test_claimRefund_revert_notSlashed() (gas: 120245)
+[PASS] test_claimRefund_success() (gas: 318827)
+[PASS] test_closeSale_revert_noParticipants() (gas: 16177)
+[PASS] test_closeSale_revert_notOwner() (gas: 114745)
+[PASS] test_closeSale_revert_wrongPhase() (gas: 123181)
+[PASS] test_closeSale_success() (gas: 123428)
+[PASS] test_commitHash_revert_noCollateral() (gas: 125803)
+[PASS] test_commitHash_revert_notOwner() (gas: 131753)
+[PASS] test_commitHash_revert_saleNotClosed() (gas: 126333)
+[PASS] test_commitHash_revert_zeroHash() (gas: 130278)
+[PASS] test_commitHash_success() (gas: 205745)
+[PASS] test_constructor_initialPhaseIsOpen() (gas: 8148)
+[PASS] test_constructor_revert_zeroPriceReverts() (gas: 88103)
+[PASS] test_constructor_setsTicketPrice() (gas: 8007)
+[PASS] test_getParticipant_revert_outOfBounds() (gas: 11703)
+[PASS] test_getParticipant_success() (gas: 114792)
+[PASS] test_prizePool_exactlySumOfTickets() (gas: 228704)
+[PASS] test_prizePool_matchesContractBalance() (gas: 171330)
+[PASS] test_revealAndDraw_collateralReturnedToOwner() (gas: 336599)
+[PASS] test_revealAndDraw_revert_calledTwice() (gas: 338145)
+[PASS] test_revealAndDraw_revert_notOwner() (gas: 321097)
+[PASS] test_revealAndDraw_revert_tooEarly() (gas: 205142)
+[PASS] test_revealAndDraw_revert_windowExpired() (gas: 322711)
+[PASS] test_revealAndDraw_revert_wrongSecret() (gas: 320794)
+[PASS] test_revealAndDraw_success() (gas: 337574)
+[PASS] test_slashOwner_revert_deadlineNotPassed() (gas: 319173)
+[PASS] test_slashOwner_revert_wrongPhase() (gas: 11069)
+[PASS] test_slashOwner_success() (gas: 322317)
+[PASS] test_totalTickets() (gas: 114847)
+Suite result: ok. 40 passed; 0 failed; 0 skipped; finished in 9.71ms (45.37ms CPU time)
+
+Ran 1 test suite in 17.83ms (9.71ms CPU time): 40 tests passed, 0 failed, 0 skipped (40 total tests)
+
+╭-----------------+-----------------+-----------------+----------------+-----------------╮
+| File            | % Lines         | % Statements    | % Branches     | % Funcs         |
++========================================================================================+
+| src/lottery.sol | 100.00% (73/73) | 100.00% (70/70) | 90.00% (45/50) | 100.00% (10/10) |
+|-----------------+-----------------+-----------------+----------------+-----------------|
+| Total           | 100.00% (73/73) | 100.00% (70/70) | 90.00% (45/50) | 100.00% (10/10) |
+╰-----------------+-----------------+-----------------+----------------+-----------------╯
