@@ -1,19 +1,24 @@
 "use client";
 
-import { AlertOctagon } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 export default function ContractAddressWarning() {
   return (
-    <div className="mb-8 flex items-start gap-3 rounded-xl border border-warn/40 bg-warn/10 px-5 py-4 text-sm text-warn animate-fade-in">
-      <AlertOctagon className="mt-0.5 h-4 w-4 shrink-0" />
+    <div className="mb-8 flex items-start gap-3 rounded-xl border border-orange-500/25 bg-orange-500/8 px-5 py-4 text-sm animate-fade-in">
+      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
       <div>
-        <strong className="block font-semibold">Contract address not configured.</strong>
-        <span className="text-warn/80">
-          Set <code className="rounded bg-warn/10 px-1 font-mono text-xs">NEXT_PUBLIC_CONTRACT_ADDRESS</code> in your{" "}
-          <code className="rounded bg-warn/10 px-1 font-mono text-xs">.env.local</code> file and restart
-          the dev server. Copy <code className="rounded bg-warn/10 px-1 font-mono text-xs">.env.example</code> as a starting
-          point.
-        </span>
+        <p className="font-semibold text-orange-300">Contract address not configured</p>
+        <p className="mt-0.5 text-orange-400/70">
+          Set{" "}
+          <code className="rounded bg-orange-500/15 px-1.5 py-0.5 font-mono text-[11px] text-orange-300">
+            NEXT_PUBLIC_CONTRACT_ADDRESS
+          </code>{" "}
+          in your{" "}
+          <code className="rounded bg-orange-500/15 px-1.5 py-0.5 font-mono text-[11px] text-orange-300">
+            .env
+          </code>{" "}
+          file and restart the development server.
+        </p>
       </div>
     </div>
   );

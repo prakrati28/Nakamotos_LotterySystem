@@ -1,63 +1,112 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldCheck, Lock, Eye, Hash, ExternalLink } from "lucide-react";
+import {
+  ShieldCheck, Lock, Hash, Eye, ExternalLink,
+  ChevronDown, ChevronUp, Copy, Check,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import type { ContractState, UseContractReturn } from "@/hooks/useContract";
 import type { WalletState } from "@/hooks/useWallet";
 import { etherscanTx, buildCommitHash } from "@/lib/utils";
 
 interface OwnerPanelProps {
-  wallet: WalletState;
+  wallet:        WalletState;
   contractState: ContractState | undefined;
-  actions: Pick<
-    UseContractReturn,
-    "closeSale" | "commitHash" | "revealAndDraw"
-  >;
+  actions:       Pick<UseContractReturn, "closeSale" | "commitHash" | "revealAndDraw">;
 }
 
-export default function OwnerPanel({
-  wallet,
-  contractState,
-  actions,
-}: OwnerPanelProps) {
-  const [secret, setSecret] = useState("");
-  const [revealSecret, setRevealSecret] = useState("");
-  const [isClosing, setIsClosing] = useState(false);
-  const [isCommitting, setIsCommitting] = useState(false);
-  const [isRevealing, setIsRevealing] = useState(false);
-  const [previewHash, setPreviewHash] = useState<string | null>(null);
+function TxLink({ hash }: { hash: string }) {
+  return (
+    <a
+      href={etherscanTx(hash)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="ml-1 inline-flex items-center gap-1 font-semibold underline underline-offset-2"
+    >
+      View tx <ExternalLink className="h-3 w-3" />
+    </a>
+  );
+}
 
-  // Only render for the contract owner
+function ActionRow({
+  icon,
+  title,
+  subtitle,
+  available,
+  children,
+}: {
+  icon:      React.ReactNode;
+  title:     string;
+  subtitle:  string;
+  available: boolean;
+  children:  React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className={`rounded-xl border transition-all ${available ? "border-lborder" : "border-lborder/40 opacity-50"}`}>
+      {/* Row header */}
+      <button
+        onClick={() => available && setOpen((o) => !o)}
+        disabled={!available}
+        className="flex w-full items-center justify-between p-4 text-left disabled:cursor-not-allowed"
+      >
+        <div className="flex items-center gap-3">
+          <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${available ? "bg-laccent/10" : "bg-lghost"}`}>
+            <span className={available ? "text-laccent" : "text-ldim"}>{icon}</span>
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-ltext">{title}</div>
+            <div className="text-[11px] text-ldim">{subtitle}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-semibold uppercase tracking-wider ${available ? "text-emerald-400" : "text-ldim"}`}>
+            {available ? "Available" : "Locked"}
+          </span>
+          {available && (open ? <ChevronUp className="h-4 w-4 text-ldim" /> : <ChevronDown className="h-4 w-4 text-ldim" />)}
+        </div>
+      </button>
+
+      {/* Expandable body */}
+      {open && available && (
+        <div className="border-t border-lborder bg-lbg/50 p-4">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function OwnerPanel({ wallet, contractState, actions }: OwnerPanelProps) {
+  /* Only visible to contract owner */
   const isOwner =
     wallet.address &&
     contractState?.owner &&
     wallet.address.toLowerCase() === contractState.owner.toLowerCase();
 
+  const [commitSecret,  setCommitSecret]  = useState("");
+  const [revealSecret,  setRevealSecret]  = useState("");
+  const [hashPreview,   setHashPreview]   = useState("");
+  const [copied,        setCopied]        = useState(false);
+  const [isClosing,     setIsClosing]     = useState(false);
+  const [isCommitting,  setIsCommitting]  = useState(false);
+  const [isRevealing,   setIsRevealing]   = useState(false);
+
   if (!isOwner) return null;
 
-  const phase = contractState?.phase;
-
-  const canClose = phase === 0;
+  const phase     = contractState?.phase ?? -1;
+  const canClose  = phase === 0;
   const canCommit = phase === 1;
   const canReveal = phase === 2;
 
-  const handleCloseSale = async () => {
+  const handleClose = async () => {
     setIsClosing(true);
-    const id = toast.loading("Closing sale…");
+    const id = toast.loading("Closing ticket sales…");
     try {
       const { hash } = await actions.closeSale();
-      toast.success(
-        () => (
-          <span className="flex items-center gap-2">
-            Sale closed.{" "}
-            <a href={etherscanTx(hash)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 underline">
-              View <ExternalLink className="h-3 w-3" />
-            </a>
-          </span>
-        ),
-        { id, duration: 8000 }
-      );
+      toast.success(<span>Sale closed.<TxLink hash={hash} /></span>, { id, duration: 10000 });
     } catch (err: unknown) {
       toast.error((err as Error).message, { id });
     } finally {
@@ -66,27 +115,14 @@ export default function OwnerPanel({
   };
 
   const handleCommit = async () => {
-    if (!secret.trim()) {
-      toast.error("Enter a secret string to commit.");
-      return;
-    }
+    if (!commitSecret.trim()) { toast.error("Enter a secret phrase."); return; }
     setIsCommitting(true);
-    const id = toast.loading("Committing hash…");
+    const id = toast.loading("Submitting commit hash…");
     try {
-      const { hash } = await actions.commitHash(secret);
-      toast.success(
-        () => (
-          <span className="flex items-center gap-2">
-            Hash committed.{" "}
-            <a href={etherscanTx(hash)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 underline">
-              View <ExternalLink className="h-3 w-3" />
-            </a>
-          </span>
-        ),
-        { id, duration: 8000 }
-      );
-      setSecret("");
-      setPreviewHash(null);
+      const { hash } = await actions.commitHash(commitSecret);
+      toast.success(<span>Hash committed.<TxLink hash={hash} /></span>, { id, duration: 10000 });
+      setCommitSecret("");
+      setHashPreview("");
     } catch (err: unknown) {
       toast.error((err as Error).message, { id });
     } finally {
@@ -95,25 +131,12 @@ export default function OwnerPanel({
   };
 
   const handleReveal = async () => {
-    if (!revealSecret.trim()) {
-      toast.error("Enter your original secret to reveal.");
-      return;
-    }
+    if (!revealSecret.trim()) { toast.error("Enter the original secret."); return; }
     setIsRevealing(true);
-    const id = toast.loading("Revealing secret and drawing winner…");
+    const id = toast.loading("Revealing & drawing winner…");
     try {
       const { hash } = await actions.revealAndDraw(revealSecret);
-      toast.success(
-        () => (
-          <span className="flex items-center gap-2">
-            Winner drawn! 🎉{" "}
-            <a href={etherscanTx(hash)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 underline">
-              View <ExternalLink className="h-3 w-3" />
-            </a>
-          </span>
-        ),
-        { id, duration: 10000 }
-      );
+      toast.success(<span>Winner drawn! 🎉<TxLink hash={hash} /></span>, { id, duration: 14000 });
       setRevealSecret("");
     } catch (err: unknown) {
       toast.error((err as Error).message, { id });
@@ -122,158 +145,157 @@ export default function OwnerPanel({
     }
   };
 
-  const handleSecretChange = (val: string) => {
-    setSecret(val);
+  const onSecretChange = (val: string) => {
+    setCommitSecret(val);
     if (val.trim()) {
-      try {
-        setPreviewHash(buildCommitHash(val));
-      } catch {
-        setPreviewHash(null);
-      }
+      try { setHashPreview(buildCommitHash(val)); } catch { setHashPreview(""); }
     } else {
-      setPreviewHash(null);
+      setHashPreview("");
     }
   };
 
+  const copyHash = () => {
+    if (!hashPreview) return;
+    navigator.clipboard.writeText(hashPreview);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="rounded-2xl border border-accent/20 bg-card p-6 shadow-glow animate-slide-up">
+    <section className="animate-slide-up-d2 rounded-2xl border border-laccent/15 bg-lsurface shadow-lglow">
       {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">
-          <ShieldCheck className="h-4 w-4 text-accent" />
+      <div className="flex items-center gap-3 border-b border-lborder px-6 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-laccent/10">
+          <ShieldCheck className="h-4 w-4 text-laccent" />
         </div>
-        <div>
-          <h2 className="font-display text-xl tracking-wider text-text">
-            OWNER PANEL
+        <div className="flex-1">
+          <h2 className="font-display text-[15px] font-semibold tracking-tight text-ltext">
+            Admin Controls
           </h2>
-          <p className="text-xs text-muted">Administrative controls</p>
+          <p className="text-[11px] text-ldim">Visible to contract owner only</p>
         </div>
-        <span className="ml-auto rounded-full bg-accent/10 px-3 py-1 text-xs font-mono font-semibold text-accent">
-          OWNER
+        <span className="rounded-full bg-laccent/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-laccent ring-1 ring-laccent/20">
+          Owner
         </span>
       </div>
 
-      <div className="space-y-4">
-        {/* ── Close Sale ──────────────────────────────────────────────────── */}
-        <div
-          className={`rounded-xl border p-5 transition-all ${
-            canClose ? "border-border bg-surface" : "border-border/50 bg-surface/50 opacity-60"
-          }`}
+      <div className="space-y-3 p-5">
+
+        {/* ── 1. Close Sale ─────────────────────────────────────────── */}
+        <ActionRow
+          icon={<Lock className="h-3.5 w-3.5" />}
+          title="Close Sale"
+          subtitle="Stop ticket purchases · Phase: Open"
+          available={canClose}
         >
-          <div className="mb-3 flex items-center gap-2">
-            <Lock className="h-4 w-4 text-warn" />
-            <span className="text-sm font-semibold text-text">Close Sale</span>
-            <span className={`ml-auto text-xs font-mono ${canClose ? "text-success" : "text-muted"}`}>
-              {canClose ? "Available" : "Phase: Open only"}
-            </span>
-          </div>
-          <p className="mb-4 text-xs text-muted">
-            Stop ticket purchases and move to the Committed phase.
+          <p className="mb-4 text-xs text-lsubtle">
+            Once closed, no more tickets can be purchased. You will then be able
+            to commit a secret hash.
           </p>
           <button
-            onClick={handleCloseSale}
-            disabled={!canClose || isClosing}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-warn/40 bg-warn/10 px-4 py-2.5 text-sm font-semibold text-warn transition-all hover:bg-warn/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={handleClose}
+            disabled={isClosing}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-orange-500/30 bg-orange-500/10 py-2.5 text-sm font-semibold text-orange-400 transition-all hover:bg-orange-500/20 active:scale-95 disabled:opacity-50"
           >
-            {isClosing ? (
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-warn/40 border-t-warn" />
-            ) : (
-              <Lock className="h-4 w-4" />
-            )}
+            {isClosing
+              ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-orange-400/30 border-t-orange-400" />
+              : <Lock className="h-3.5 w-3.5" />}
             {isClosing ? "Closing…" : "Close Sale"}
           </button>
-        </div>
+        </ActionRow>
 
-        {/* ── Commit Hash ─────────────────────────────────────────────────── */}
-        <div
-          className={`rounded-xl border p-5 transition-all ${
-            canCommit ? "border-border bg-surface" : "border-border/50 bg-surface/50 opacity-60"
-          }`}
+        {/* ── 2. Commit Hash ────────────────────────────────────────── */}
+        <ActionRow
+          icon={<Hash className="h-3.5 w-3.5" />}
+          title="Commit Hash"
+          subtitle="Submit keccak256(secret) on-chain · Phase: Closed"
+          available={canCommit}
         >
-          <div className="mb-3 flex items-center gap-2">
-            <Hash className="h-4 w-4 text-yellow-400" />
-            <span className="text-sm font-semibold text-text">Commit Hash</span>
-            <span className={`ml-auto text-xs font-mono ${canCommit ? "text-success" : "text-muted"}`}>
-              {canCommit ? "Available" : "Phase: Sale Closed only"}
-            </span>
-          </div>
-          <p className="mb-4 text-xs text-muted">
-            Enter a secret string. The keccak256 hash will be committed on-chain.
-            Keep your secret safe — you need it for the reveal step.
-          </p>
-
-          <input
-            type="text"
-            value={secret}
-            onChange={(e) => handleSecretChange(e.target.value)}
-            placeholder="Enter your secret phrase…"
-            disabled={!canCommit || isCommitting}
-            className="mb-3 w-full rounded-lg border border-border bg-bg px-4 py-2.5 text-sm text-text placeholder-muted outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 disabled:opacity-40"
-          />
-
-          {/* Hash preview */}
-          {previewHash && (
-            <div className="mb-3 rounded-lg border border-border bg-bg p-3">
-              <p className="mb-1 text-xs text-muted">Hash preview (will be submitted):</p>
-              <p className="break-all font-mono text-xs text-subtle">{previewHash}</p>
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-ldim">
+                Secret Phrase
+              </label>
+              <input
+                type="text"
+                value={commitSecret}
+                onChange={(e) => onSecretChange(e.target.value)}
+                placeholder="Enter a secret string…"
+                disabled={isCommitting}
+                className="w-full rounded-lg border border-lborder bg-lsurface px-3.5 py-2.5 text-sm text-ltext placeholder-ldim outline-none transition-all focus:border-laccent/60 focus:ring-2 focus:ring-laccent/15 disabled:opacity-50"
+              />
             </div>
-          )}
 
-          <button
-            onClick={handleCommit}
-            disabled={!canCommit || isCommitting || !secret.trim()}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-yellow-400/40 bg-yellow-400/10 px-4 py-2.5 text-sm font-semibold text-yellow-400 transition-all hover:bg-yellow-400/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {isCommitting ? (
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-yellow-400/40 border-t-yellow-400" />
-            ) : (
-              <Hash className="h-4 w-4" />
+            {/* Hash preview */}
+            {hashPreview && (
+              <div className="rounded-lg border border-lborder bg-lbg p-3">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ldim">
+                    Hash Preview (on-chain value)
+                  </span>
+                  <button onClick={copyHash} className="flex items-center gap-1 text-[10px] text-ldim hover:text-lsubtle">
+                    {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                <p className="break-all font-mono text-[11px] leading-relaxed text-lsubtle">
+                  {hashPreview}
+                </p>
+              </div>
             )}
-            {isCommitting ? "Committing…" : "Commit Hash"}
-          </button>
-        </div>
 
-        {/* ── Reveal and Draw ─────────────────────────────────────────────── */}
-        <div
-          className={`rounded-xl border p-5 transition-all ${
-            canReveal ? "border-border bg-surface" : "border-border/50 bg-surface/50 opacity-60"
-          }`}
-        >
-          <div className="mb-3 flex items-center gap-2">
-            <Eye className="h-4 w-4 text-accent" />
-            <span className="text-sm font-semibold text-text">Reveal & Draw</span>
-            <span className={`ml-auto text-xs font-mono ${canReveal ? "text-success" : "text-muted"}`}>
-              {canReveal ? "Available" : "Phase: Committed only"}
-            </span>
+            <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/8 px-3 py-2.5 text-[11px] text-yellow-400/80">
+              ⚠ Save your secret securely — you need it in the Reveal step.
+            </div>
+
+            <button
+              onClick={handleCommit}
+              disabled={isCommitting || !commitSecret.trim()}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-laccent py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-laccenthi active:scale-95 disabled:opacity-50"
+            >
+              {isCommitting
+                ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                : <Hash className="h-3.5 w-3.5" />}
+              {isCommitting ? "Committing…" : "Submit Commit Hash"}
+            </button>
           </div>
-          <p className="mb-4 text-xs text-muted">
-            Reveal the original secret used during commit. The contract will
-            verify it and draw a winner using commit-reveal randomness.
-          </p>
+        </ActionRow>
 
-          <input
-            type="text"
-            value={revealSecret}
-            onChange={(e) => setRevealSecret(e.target.value)}
-            placeholder="Enter the original secret phrase…"
-            disabled={!canReveal || isRevealing}
-            className="mb-3 w-full rounded-lg border border-border bg-bg px-4 py-2.5 text-sm text-text placeholder-muted outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 disabled:opacity-40"
-          />
+        {/* ── 3. Reveal & Draw ──────────────────────────────────────── */}
+        <ActionRow
+          icon={<Eye className="h-3.5 w-3.5" />}
+          title="Reveal & Draw"
+          subtitle="Prove secret, select winner · Phase: Committed"
+          available={canReveal}
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-ldim">
+                Original Secret (used during Commit)
+              </label>
+              <input
+                type="text"
+                value={revealSecret}
+                onChange={(e) => setRevealSecret(e.target.value)}
+                placeholder="Enter the same secret used to commit…"
+                disabled={isRevealing}
+                className="w-full rounded-lg border border-lborder bg-lsurface px-3.5 py-2.5 text-sm text-ltext placeholder-ldim outline-none transition-all focus:border-laccent/60 focus:ring-2 focus:ring-laccent/15 disabled:opacity-50"
+              />
+            </div>
 
-          <button
-            onClick={handleReveal}
-            disabled={!canReveal || isRevealing || !revealSecret.trim()}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-bg transition-all hover:bg-accentDim active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {isRevealing ? (
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bg/40 border-t-bg" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
-            {isRevealing ? "Drawing Winner…" : "Reveal & Draw Winner"}
-          </button>
-        </div>
+            <button
+              onClick={handleReveal}
+              disabled={isRevealing || !revealSecret.trim()}
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-500 active:scale-95 disabled:opacity-50"
+            >
+              {isRevealing
+                ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                : <Eye className="h-3.5 w-3.5" />}
+              {isRevealing ? "Drawing Winner…" : "Reveal & Draw Winner"}
+            </button>
+          </div>
+        </ActionRow>
       </div>
-    </div>
+    </section>
   );
 }

@@ -1,66 +1,58 @@
 import { ethers } from "ethers";
 import { ETHERSCAN_BASE } from "./constants";
 
-/** Shorten an Ethereum address: 0x1234…abcd */
-export function shortAddress(address: string): string {
-  if (!address || address.length < 10) return address;
-  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+export function shortAddress(addr: string): string {
+  if (!addr || addr.length < 10) return addr;
+  return `${addr.slice(0, 4)}…${addr.slice(-3)}`;
 }
 
-/** Format wei → ETH string with up to 6 decimals */
-export function formatEth(wei: bigint): string {
-  return parseFloat(ethers.formatEther(wei)).toLocaleString(undefined, {
+export function formatEth(wei: bigint, decimals = 4): string {
+  const n = parseFloat(ethers.formatEther(wei));
+  return n.toLocaleString(undefined, {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 6,
+    maximumFractionDigits: decimals,
   });
 }
 
-/** Build the client-side commit hash from a plaintext secret.
- *  keccak256(abi.encode(secret_as_bytes32))
- *  The contract must use the same encoding scheme.
+/**
+ * Build the commit hash from a secret string.
+ * keccak256(encodeBytes32String(secret)) — must match your Solidity contract.
+ * If your contract uses a different encoding, adjust here.
  */
 export function buildCommitHash(secret: string): string {
-  // Pad/encode the secret as bytes32
-  const secretBytes = ethers.encodeBytes32String(
-    secret.slice(0, 31) // bytes32 max 31 UTF-8 chars + null terminator
-  );
-  return ethers.keccak256(secretBytes);
+  const bytes32 = ethers.encodeBytes32String(secret.slice(0, 31));
+  return ethers.keccak256(bytes32);
 }
 
-/** Encode a plaintext secret as bytes32 for revealAndDraw */
 export function encodeSecret(secret: string): string {
   return ethers.encodeBytes32String(secret.slice(0, 31));
 }
 
-/** Etherscan links */
-export const etherscanTx = (hash: string) => `${ETHERSCAN_BASE}/tx/${hash}`;
-export const etherscanAddr = (addr: string) =>
-  `${ETHERSCAN_BASE}/address/${addr}`;
+export const etherscanTx   = (h: string) => `${ETHERSCAN_BASE}/tx/${h}`;
+export const etherscanAddr = (a: string) => `${ETHERSCAN_BASE}/address/${a}`;
 
-/** Parse a contract revert error into a human-readable string */
-export function parseContractError(error: unknown): string {
-  if (typeof error !== "object" || error === null) return "Unknown error";
-  const e = error as Record<string, unknown>;
+export function parseContractError(err: unknown): string {
+  if (!err || typeof err !== "object") return "Unknown error.";
+  const e = err as Record<string, unknown>;
 
-  // User rejected in MetaMask
-  if (e.code === 4001 || e.code === "ACTION_REJECTED") {
-    return "Transaction rejected by user.";
-  }
+  // User rejected
+  if (e.code === 4001 || e.code === "ACTION_REJECTED")
+    return "Transaction rejected.";
 
-  // Ethers v6 revert with reason
+  // Ethers reason string
   if (typeof e.reason === "string") return e.reason;
 
-  // Nested message
   if (typeof e.message === "string") {
-    // Strip noisy ethers prefix
     const msg = e.message as string;
-    const revertMatch = msg.match(/reverted with reason string '(.+?)'/);
-    if (revertMatch) return revertMatch[1];
-    const customMatch = msg.match(/execution reverted: (.+)/);
-    if (customMatch) return customMatch[1];
-    // Shorten very long messages
-    return msg.length > 120 ? msg.slice(0, 120) + "…" : msg;
+    const m1 = msg.match(/reverted with reason string '(.+?)'/);
+    if (m1) return m1[1];
+    const m2 = msg.match(/execution reverted: (.+)/i);
+    if (m2) return m2[1];
+    return msg.length > 160 ? msg.slice(0, 160) + "…" : msg;
   }
-
   return "Transaction failed.";
+}
+
+export function cls(...classes: (string | false | null | undefined)[]): string {
+  return classes.filter(Boolean).join(" ");
 }

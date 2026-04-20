@@ -1,40 +1,123 @@
+/* ─── Fonts ─────────────────────────────────────────────────────────────────
+   Syne      — geometric display, modern & distinctive (headings)
+   Geist     — clean, technical, professional (body)
+   Geist Mono — monospaced for addresses & code
+   ─────────────────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&display=swap');
+
+/* Geist is served from Vercel's CDN. Fallback: use next/font/google in layout if self-hosting. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
+/* ─── CSS custom properties ─────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
+  --noise-opacity: 0.025;
 }
 
-* {
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background-color: #0A0A0F;
-  color: #E8E8F0;
-  font-family: 'DM Sans', sans-serif;
+  background-color: #080B12;
+  color: #F1F5F9;
+  font-family: 'Geist', 'DM Sans', system-ui, sans-serif;
   min-height: 100vh;
-  background-image: 
-    linear-gradient(rgba(232,255,71,0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(232,255,71,0.015) 1px, transparent 1px);
-  background-size: 60px 60px;
+  line-height: 1.6;
+
+  /* Subtle dot-grid texture — very professional */
+  background-image: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.06) 1px,
+    transparent 1px
+  );
+  background-size: 32px 32px;
 }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0A0A0F; }
-::-webkit-scrollbar-thumb { background: #1E1E2E; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2E2E4E; }
+/* ─── Noise overlay (optional — adds depth) ──────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: var(--noise-opacity);
+}
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+/* Make content sit above overlay */
+#__next,
+main {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1F2A3C; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #2D3F57; }
+
+/* ─── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #F1F5F9;
+}
+
+/* ─── Number input — hide arrows ─────────────────────────────────────────── */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type=number] { -moz-appearance: textfield; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ─── Utility classes ─────────────────────────────────────────────────────── */
+@layer utilities {
+  .font-display { font-family: 'Syne', sans-serif; }
+  .font-mono    { font-family: 'Geist Mono', 'JetBrains Mono', monospace; }
+
+  /* Glass card effect */
+  .glass {
+    background: rgba(17, 24, 39, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Shimmer skeleton */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #111827 25%,
+      #1F2A3C 50%,
+      #111827 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* Blue glow ring on focus */
+  .focus-ring {
+    @apply outline-none ring-2 ring-laccent/40 ring-offset-2 ring-offset-lbg;
+  }
+
+  /* Divider line */
+  .divider {
+    @apply border-t border-lborder;
+  }
+}

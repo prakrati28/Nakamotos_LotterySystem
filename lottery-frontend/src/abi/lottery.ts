@@ -1,10 +1,5 @@
-/**
- * ABI for the Lottery contract with Commit-Reveal randomness.
- * Functions: buyTicket, commitHash, revealAndDraw, claimPrize, closeSale
- * Phases: Open(0), SaleClosed(1), Committed(2), Drawn(3)
- */
 export const LOTTERY_ABI = [
-  // ── View / Pure ──────────────────────────────────────────────────────────────
+  // ── View ─────────────────────────────────────────────────────────────────
   {
     name: "owner",
     type: "function",
@@ -54,7 +49,7 @@ export const LOTTERY_ABI = [
     inputs: [{ name: "participant", type: "address" }],
     outputs: [{ name: "", type: "bool" }],
   },
-  // ── State-Changing ────────────────────────────────────────────────────────────
+  // ── Write ─────────────────────────────────────────────────────────────────
   {
     name: "buyTicket",
     type: "function",
@@ -90,7 +85,7 @@ export const LOTTERY_ABI = [
     inputs: [],
     outputs: [],
   },
-  // ── Events ───────────────────────────────────────────────────────────────────
+  // ── Events ────────────────────────────────────────────────────────────────
   {
     name: "TicketPurchased",
     type: "event",
@@ -110,5 +105,3 @@ export const LOTTERY_ABI = [
     ],
   },
 ] as const;
-
-export type LotteryABI = typeof LOTTERY_ABI;

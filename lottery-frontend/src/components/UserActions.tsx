@@ -1,17 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Ticket, Gift, ExternalLink, CheckCircle } from "lucide-react";
+import { Ticket, Trophy, ExternalLink, CheckCircle2, Info } from "lucide-react";
 import toast from "react-hot-toast";
 import type { ContractState, UseContractReturn } from "@/hooks/useContract";
 import type { WalletState } from "@/hooks/useWallet";
 import { formatEth, etherscanTx } from "@/lib/utils";
-import { TICKET_PRICE_ETH } from "@/lib/constants";
+import { TICKET_PRICE_ETH, ZERO_ADDRESS } from "@/lib/constants";
 
 interface UserActionsProps {
-  wallet: WalletState;
+  wallet:        WalletState;
   contractState: ContractState | undefined;
-  actions: Pick<UseContractReturn, "buyTicket" | "claimPrize">;
+  actions:       Pick<UseContractReturn, "buyTicket" | "claimPrize">;
+}
+
+function TxLink({ hash }: { hash: string }) {
+  return (
+    <a
+      href={etherscanTx(hash)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="ml-1 inline-flex items-center gap-1 font-semibold underline underline-offset-2"
+    >
+      View tx <ExternalLink className="h-3 w-3" />
+    </a>
+  );
 }
 
 export default function UserActions({
@@ -19,16 +32,19 @@ export default function UserActions({
   contractState,
   actions,
 }: UserActionsProps) {
-  const [ethAmount, setEthAmount] = useState(TICKET_PRICE_ETH);
-  const [isBuying, setIsBuying] = useState(false);
-  const [isClaiming, setIsClaiming] = useState(false);
+  const [ethAmount,   setEthAmount]   = useState(TICKET_PRICE_ETH);
+  const [isBuying,    setIsBuying]    = useState(false);
+  const [isClaiming,  setIsClaiming]  = useState(false);
 
-  const phase = contractState?.phase;
-  const isOpen = phase === 0;
-  const isDrawn = phase === 3;
+  const phase    = contractState?.phase;
+  const isOpen   = phase === 0;
+  const isDrawn  = phase === 3;
+
   const isWinner =
     wallet.address &&
-    contractState?.winner?.toLowerCase() === wallet.address.toLowerCase();
+    contractState?.winner &&
+    contractState.winner !== ZERO_ADDRESS &&
+    contractState.winner.toLowerCase() === wallet.address.toLowerCase();
 
   const canBuy =
     wallet.isConnected &&
@@ -43,32 +59,21 @@ export default function UserActions({
     isWinner;
 
   const handleBuy = async () => {
-    if (!ethAmount || parseFloat(ethAmount) <= 0) {
-      toast.error("Enter a valid ETH amount.");
+    const val = parseFloat(ethAmount);
+    if (!ethAmount || isNaN(val) || val <= 0) {
+      toast.error("Please enter a valid ETH amount.");
       return;
     }
     setIsBuying(true);
-    const toastId = toast.loading("Sending transaction…");
+    const id = toast.loading("Awaiting wallet confirmation…");
     try {
       const { hash } = await actions.buyTicket(ethAmount);
       toast.success(
-        () => (
-          <span className="flex items-center gap-2">
-            Ticket purchased!{" "}
-            <a
-              href={etherscanTx(hash)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 underline"
-            >
-              View <ExternalLink className="h-3 w-3" />
-            </a>
-          </span>
-        ),
-        { id: toastId, duration: 8000 }
+        <span>Ticket purchased!<TxLink hash={hash} /></span>,
+        { id, duration: 10000 }
       );
     } catch (err: unknown) {
-      toast.error((err as Error).message, { id: toastId });
+      toast.error((err as Error).message, { id });
     } finally {
       setIsBuying(false);
     }
@@ -76,155 +81,175 @@ export default function UserActions({
 
   const handleClaim = async () => {
     setIsClaiming(true);
-    const toastId = toast.loading("Claiming prize…");
+    const id = toast.loading("Claiming prize…");
     try {
       const { hash } = await actions.claimPrize();
       toast.success(
-        () => (
-          <span className="flex items-center gap-2">
-            🎉 Prize claimed!{" "}
-            <a
-              href={etherscanTx(hash)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 underline"
-            >
-              View <ExternalLink className="h-3 w-3" />
-            </a>
-          </span>
-        ),
-        { id: toastId, duration: 10000 }
+        <span>🎉 Prize claimed!<TxLink hash={hash} /></span>,
+        { id, duration: 12000 }
       );
     } catch (err: unknown) {
-      toast.error((err as Error).message, { id: toastId });
+      toast.error((err as Error).message, { id });
     } finally {
       setIsClaiming(false);
     }
   };
 
+  const buyDisabledReason = !wallet.isConnected
+    ? "Connect your wallet to purchase a ticket."
+    : !wallet.isCorrectNetwork
+    ? "Switch to the correct network first."
+    : contractState?.hasTicket
+    ? "You already hold a ticket for this round."
+    : !isOpen
+    ? "Ticket sales are not open right now."
+    : null;
+
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-card animate-slide-up">
-      <div className="mb-6">
-        <h2 className="font-display text-xl tracking-wider text-text">
-          YOUR ACTIONS
-        </h2>
-        <p className="mt-0.5 text-sm text-muted">Participate in the lottery</p>
+    <section className="animate-slide-up-d1 rounded-2xl border border-lborder bg-lsurface shadow-lpanel">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-lborder px-3 sm:px-6 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+          <Ticket className="h-4 w-4 text-emerald-400" />
+        </div>
+        <div>
+          <h2 className="font-display text-[15px] font-semibold tracking-tight text-ltext">
+            Participate
+          </h2>
+          <p className="text-[11px] text-ldim">Buy a ticket or claim your winnings</p>
+        </div>
       </div>
 
-      {/* Has ticket badge */}
-      {contractState?.hasTicket && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          <CheckCircle className="h-4 w-4" />
-          You already hold a ticket for this round.
-        </div>
-      )}
+      <div className="space-y-4 p-3 sm:p-6">
+        {/* Already has ticket */}
+        {contractState?.hasTicket && (
+          <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/8 px-4 py-3 text-sm text-emerald-400">
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+            <span>You are entered in this round. Good luck!</span>
+          </div>
+        )}
 
-      {/* Winner banner */}
-      {isWinner && (
-        <div className="mb-4 flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/10 px-4 py-3 text-sm text-accent shadow-glow">
-          <Gift className="h-4 w-4" />
-          🎉 Congratulations! You are the winner!
-        </div>
-      )}
+        {/* Winner banner */}
+        {isWinner && (
+          <div className="rounded-xl border border-yellow-500/30 bg-l-gradient-gold bg-lgold/5 px-4 py-4 shadow-lgolden">
+            <div className="flex items-center gap-2 text-yellow-400">
+              <Trophy className="h-4 w-4" />
+              <span className="font-semibold">You are the winner!</span>
+            </div>
+            <p className="mt-1 text-sm text-yellow-400/70">
+              Claim your prize of{" "}
+              <span className="font-semibold text-yellow-300">
+                {contractState ? formatEth(contractState.prizePool) : "—"} ETH
+              </span>{" "}
+              below.
+            </p>
+          </div>
+        )}
 
-      <div className="space-y-4">
-        {/* Buy Ticket */}
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <div className="mb-4 flex items-center gap-2">
-            <Ticket className="h-4 w-4 text-accent" />
-            <span className="text-sm font-semibold text-text">Buy Ticket</span>
-            {contractState && (
-              <span className="ml-auto text-xs text-muted font-mono">
-                Min: {formatEth(contractState.ticketPrice)} ETH
-              </span>
-            )}
+        {/* ── Buy Ticket ─────────────────────────────────────────────── */}
+        <div className="rounded-xl border border-lborder bg-lcard p-3 sm:p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-ltext">Buy Ticket</span>
+              {contractState && (
+                <span className="rounded-md bg-lghost px-2 py-0.5 font-mono text-[11px] text-lsubtle ring-1 ring-lborder">
+                  Min {formatEth(contractState.ticketPrice)} ETH
+                </span>
+              )}
+            </div>
+            <span
+              className={`text-[11px] font-medium ${
+                isOpen ? "text-emerald-400" : "text-ldim"
+              }`}
+            >
+              {isOpen ? "● Sales open" : "● Sales closed"}
+            </span>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
+            {/* ETH input */}
             <div className="relative flex-1">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-mono text-muted">
+              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm font-medium text-ldim">
                 Ξ
-              </span>
+              </div>
               <input
                 type="number"
                 step="0.001"
                 min="0"
                 value={ethAmount}
                 onChange={(e) => setEthAmount(e.target.value)}
-                className="w-full rounded-lg border border-border bg-bg pl-7 pr-4 py-2.5 text-sm font-mono text-text placeholder-muted outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 disabled:opacity-40"
                 placeholder="0.01"
                 disabled={!canBuy || isBuying}
+                className="w-full rounded-lg border border-lborder bg-lsurface py-2.5 pl-8 pr-4 font-mono text-sm text-ltext placeholder-ldim outline-none transition-all focus:border-laccent/60 focus:ring-2 focus:ring-laccent/15 disabled:opacity-50"
               />
             </div>
+            {/* Buy button */}
             <button
               onClick={handleBuy}
               disabled={!canBuy || isBuying}
-              className="flex min-w-[120px] items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-bg transition-all hover:bg-accentDim active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex min-w-[120px] items-center justify-center gap-2 rounded-lg bg-laccent px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-laccenthi active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isBuying ? (
-                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-bg/40 border-t-bg" />
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
               ) : (
-                <Ticket className="h-4 w-4" />
+                <Ticket className="h-3.5 w-3.5" />
               )}
               {isBuying ? "Buying…" : "Buy Ticket"}
             </button>
           </div>
 
-          {/* Reason why disabled */}
-          {!canBuy && wallet.isConnected && (
-            <p className="mt-2 text-xs text-muted">
-              {!wallet.isCorrectNetwork
-                ? "Switch to the correct network to buy."
-                : contractState?.hasTicket
-                ? "You already have a ticket."
-                : !isOpen
-                ? `Ticket sales are closed (Phase: ${
-                    phase !== undefined ? (["Open","Sale Closed","Committed","Drawn"][phase] ?? phase) : "—"
-                  }).`
-                : ""}
-            </p>
-          )}
-          {!wallet.isConnected && (
-            <p className="mt-2 text-xs text-muted">Connect your wallet to buy a ticket.</p>
+          {/* Disabled reason */}
+          {buyDisabledReason && (
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-ldim">
+              <Info className="h-3 w-3 shrink-0" />
+              {buyDisabledReason}
+            </div>
           )}
         </div>
 
-        {/* Claim Prize */}
-        <div className="rounded-xl border border-border bg-surface p-5">
-          <div className="mb-4 flex items-center gap-2">
-            <Gift className="h-4 w-4 text-accent" />
-            <span className="text-sm font-semibold text-text">Claim Prize</span>
-            {contractState && contractState.winner !== "0x0000000000000000000000000000000000000000" && (
-              <span className="ml-auto text-xs text-muted font-mono">
-                Pool: {formatEth(contractState.prizePool)} ETH
-              </span>
-            )}
+        {/* ── Claim Prize ────────────────────────────────────────────── */}
+        <div
+          className={`rounded-xl border p-5 transition-all ${
+            canClaim
+              ? "border-yellow-500/25 bg-l-gradient-gold bg-lcard"
+              : "border-lborder bg-lcard opacity-60"
+          }`}
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-sm font-semibold text-ltext">Claim Prize</span>
+            <span className="text-[11px] text-ldim">
+              {isDrawn ? "Winner drawn" : "Awaiting draw"}
+            </span>
           </div>
 
           <button
             onClick={handleClaim}
             disabled={!canClaim || isClaiming}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-semibold text-accent transition-all hover:bg-accent/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+            className={`flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
+              canClaim
+                ? "bg-yellow-500 text-white shadow-lgolden hover:bg-yellow-400"
+                : "border border-lborder text-ldim"
+            }`}
           >
             {isClaiming ? (
-              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-accent/40 border-t-accent" />
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             ) : (
-              <Gift className="h-4 w-4" />
+              <Trophy className="h-3.5 w-3.5" />
             )}
             {isClaiming ? "Claiming…" : "Claim Prize"}
           </button>
 
-          {!canClaim && wallet.isConnected && (
-            <p className="mt-2 text-xs text-muted text-center">
+          {!canClaim && (
+            <p className="mt-3 text-center text-[11px] text-ldim">
               {!isDrawn
-                ? "Prize can only be claimed after a winner is drawn."
+                ? "Available after the winner is drawn."
                 : !isWinner
-                ? "Only the winner can claim the prize."
+                ? "Only the winning address can claim."
                 : ""}
             </p>
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
