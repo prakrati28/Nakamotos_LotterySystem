@@ -129,10 +129,10 @@ export default function LotteryApp() {
           </div>
 
           <div className="flex items-center gap-4 text-[12px] text-ldim">
-            <a href="#" className="transition-colors hover:text-lsubtle">
+            <a href="https://github.com/prakrati28/NAKAMOTOS_LOTTERYSYSTEM/Readme.md" className="transition-colors hover:text-lsubtle">
               Docs
             </a>
-            <a href="#" className="transition-colors hover:text-lsubtle">
+            <a href="https://github.com/prakrati28/NAKAMOTOS_LOTTERYSYSTEM" className="transition-colors hover:text-lsubtle">
               GitHub
             </a>
             <a
