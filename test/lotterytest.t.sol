@@ -8,13 +8,12 @@ import {Lottery} from "../src/lottery.sol";
  * @title  LotteryTest
  * @notice Full test suite for the Commit-Reveal multi-round Lottery contract.
  *
- * Run tests  :  forge test --match-path test/LotteryTest.t.sol -vvv
- * Coverage   :  forge coverage --match-path test/LotteryTest.t.sol
+ * Run tests  :  forge test --match-path test/lotterytest.t.sol -vvv
+ * Coverage   :  forge coverage --match-path test/lotterytest.t.sol
  */
 contract LotteryTest is Test {
-    // ─────────────────────────────────────────────────────────────────────────
+
     // Shared state
-    // ─────────────────────────────────────────────────────────────────────────
 
     Lottery public lottery;
 
@@ -32,15 +31,11 @@ contract LotteryTest is Test {
     address charlie = makeAddr("charlie");
     address nonWinner = makeAddr("nonWinner");
 
-    // ─────────────────────────────────────────────────────────────────────────
     // Allow this test contract (= owner) to receive collateral returns
-    // ─────────────────────────────────────────────────────────────────────────
 
     receive() external payable {}
 
-    // ─────────────────────────────────────────────────────────────────────────
     // Setup
-    // ─────────────────────────────────────────────────────────────────────────
 
     function setUp() public {
         lottery = new Lottery(TICKET_PRICE);
@@ -53,9 +48,7 @@ contract LotteryTest is Test {
         vm.deal(owner,   100 ether);
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
     // Internal helpers
-    // ─────────────────────────────────────────────────────────────────────────
 
     /// Buy one ticket as `buyer`.
     function _buyTicket(address buyer) internal {
@@ -85,11 +78,9 @@ contract LotteryTest is Test {
         lottery.revealAndDraw(SECRET);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 1. TICKET PURCHASE TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
-    // ── Happy path ──────────────────────────────────────────────────────────
+    // Happy path
 
     function test_BuyTicket_Success() public {
         vm.prank(alice);
@@ -117,7 +108,7 @@ contract LotteryTest is Test {
         assertEq(lottery.userTickets(1, alice), 2);
     }
 
-    // ── REQUIRED: Ticket purchases revert after sale is closed ───────────────
+    //  REQUIRED: Ticket purchases revert after sale is closed 
 
     function test_BuyTicket_RevertsAfterSaleClosed() public {
         _buyTicket(alice);
@@ -146,7 +137,7 @@ contract LotteryTest is Test {
         assertEq(lottery.currentRound(), roundId); // still same round
     }
 
-    // ── Wrong value ──────────────────────────────────────────────────────────
+    //  Wrong value 
 
     function test_BuyTicket_RevertsOnWrongPrice_TooLow() public {
         vm.expectRevert("Lottery: incorrect ticket price");
@@ -160,9 +151,7 @@ contract LotteryTest is Test {
         lottery.buyTicket{value: TICKET_PRICE + 1}();
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 2. CLOSE SALE TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_CloseSale_Success() public {
         _buyTicket(alice);
@@ -192,9 +181,7 @@ contract LotteryTest is Test {
         lottery.closeSale();
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 3. COMMIT HASH TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_CommitHash_Success() public {
         _buyTicket(alice);
@@ -238,11 +225,9 @@ contract LotteryTest is Test {
         lottery.commitHash{value: 0}(COMMIT_HASH);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 4. REVEAL AND DRAW TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
-    // ── Happy path ──────────────────────────────────────────────────────────
+    // Happy path 
 
     function test_RevealAndDraw_Success() public {
         uint256 roundId = lottery.currentRound();
@@ -273,7 +258,7 @@ contract LotteryTest is Test {
         assertEq(lottery.lockedCollateral(roundId), 0);
     }
 
-    // ── REQUIRED: Revealing wrong secret (hash mismatch) reverts ─────────────
+    //  REQUIRED: Revealing wrong secret (hash mismatch) reverts 
 
     function test_RevealAndDraw_RevertsOnWrongSecret() public {
         uint256 roundId = lottery.currentRound();
@@ -297,7 +282,7 @@ contract LotteryTest is Test {
         lottery.revealAndDraw(bytes32(0));
     }
 
-    // ── REQUIRED: Second call to revealAndDraw reverts ───────────────────────
+    //  REQUIRED: Second call to revealAndDraw reverts 
 
     function test_RevealAndDraw_RevertsOnSecondCall() public {
         uint256 roundId = lottery.currentRound();
@@ -355,11 +340,9 @@ contract LotteryTest is Test {
         lottery.revealAndDraw(SECRET);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 5. CLAIM PRIZE TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
-    // ── REQUIRED: Only winner can claim the prize ────────────────────────────
+    //  REQUIRED: Only winner can claim the prize 
 
     function test_ClaimPrize_WinnerReceivesPrize() public {
         uint256 roundId = _advanceToDrawn();
@@ -376,7 +359,7 @@ contract LotteryTest is Test {
         assertTrue(lottery.prizeClaimed(roundId));
     }
 
-    // ── REQUIRED: Non-winner claimPrize reverts ──────────────────────────────
+    //  REQUIRED: Non-winner claimPrize reverts 
 
     function test_ClaimPrize_RevertsForNonWinner() public {
         uint256 roundId = _advanceToDrawn();
@@ -413,9 +396,7 @@ contract LotteryTest is Test {
         lottery.claimPrize(roundId);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 6. REQUIRED: Prize pool exactly equals sum of all ticket payments
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_PrizePool_ExactlyEqualsTicketPayments() public {
         _buyTicket(alice);
@@ -446,9 +427,7 @@ contract LotteryTest is Test {
         assertEq(lottery.totalTickets(1), count);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 7. SLASH OWNER TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_SlashOwner_Success() public {
         uint256 roundId = lottery.currentRound();
@@ -480,9 +459,7 @@ contract LotteryTest is Test {
         lottery.slashOwner();
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 8. CLAIM REFUND TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_ClaimRefund_Success() public {
         uint256 roundId = lottery.currentRound();
@@ -554,9 +531,7 @@ contract LotteryTest is Test {
         lottery.claimRefund(roundId);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 9. MULTI-ROUND TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_MultiRound_StartNewRoundAfterDrawn() public {
         _advanceToDrawn();
@@ -622,9 +597,7 @@ contract LotteryTest is Test {
         lottery.startNewRound();
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 10. VIEW HELPERS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_GetParticipant_RevertsOnOutOfBounds() public {
         _buyTicket(alice);
@@ -645,9 +618,7 @@ contract LotteryTest is Test {
         assertEq(lottery.getParticipant(1, 1), bob);
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
     // 11. CONSTRUCTOR TESTS
-    // ═════════════════════════════════════════════════════════════════════════
 
     function test_Constructor_SetsTicketPrice() public view {
         assertEq(lottery.ticketPrice(), TICKET_PRICE);
