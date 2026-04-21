@@ -1,4 +1,3 @@
-$ forge test --match-path test/lotterytest.t.sol --gas-report
 [⠊] Compiling...
 No files changed, compilation skipped
 
@@ -57,95 +56,60 @@ Ran 52 tests for test/lotterytest.t.sol:LotteryTest
 [PASS] test_TotalTickets_ReturnsZeroForNewRound() (gas: 8553)
 Suite result: ok. 52 passed; 0 failed; 0 skipped; finished in 176.66ms (351.34ms CPU time)
 
-╭----------------------------------------------+-----------------+-------+--------+--------+---------╮
-| src/gasOptimisedLottery.sol:Lottery Contract |                 |       |        |        |         |
-+====================================================================================================+
-| Deployment Cost                              | Deployment Size |       |        |        |         |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| 2571479                                      | 12288           |       |        |        |         |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-|                                              |                 |       |        |        |         |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| Function Name                                | Min             | Avg   | Median | Max    | # Calls |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| buyTicket                                    | 26006           | 90519 | 84865  | 119065 | 1757    |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| claimPrize                                   | 29666           | 33757 | 30051  | 39606  | 5       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| claimRefund                                  | 29644           | 35970 | 31869  | 43234  | 5       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| closeSale                                    | 23836           | 49534 | 51663  | 51663  | 34      |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| commitHash                                   | 24537           | 92045 | 102236 | 102236 | 29      |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| committedHash                                | 2841            | 2841  | 2841   | 2841   | 1       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| currentRound                                 | 2470            | 2470  | 2470   | 2470   | 28      |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| getParticipant                               | 3156            | 4920  | 5509   | 5509   | 4       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| lockedCollateral                             | 2864            | 2864  | 2864   | 2864   | 2       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| phase                                        | 3022            | 3022  | 3022   | 3022   | 8       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| prizeClaimed                                 | 2910            | 2910  | 2910   | 2910   | 1       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| prizePool                                    | 2886            | 2886  | 2886   | 2886   | 265     |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| revealAndDraw                                | 24517           | 44390 | 53816  | 53816  | 17      |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| slashOwner                                   | 25967           | 30891 | 32395  | 32395  | 7       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| startNewRound                                | 23815           | 30919 | 31671  | 35016  | 6       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| targetBlock                                  | 2820            | 2820  | 2820   | 2820   | 21      |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| ticketPrice                                  | 2471            | 2471  | 2471   | 2471   | 1       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| totalTickets                                 | 2806            | 2806  | 2806   | 2806   | 263     |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| userTickets                                  | 3103            | 3103  | 3103   | 3103   | 1       |
-|----------------------------------------------+-----------------+-------+--------+--------+---------|
-| winner                                       | 2969            | 2969  | 2969   | 2969   | 4       |
-╰----------------------------------------------+-----------------+-------+--------+--------+---------╯
+GAS REPORT
+-------------------------------------------------------------------------
+Generated with: forge test --match-path test/lotterytest.t.sol --gas-report
+
+BEFORE — src/lottery.sol (unoptimised)
+
+| Function Name  | Min    | Avg    | Median  | Max     | # Calls |
+|----------------|--------|--------|---------|---------|---------|
+| buyTicket      | 25,940 | 92,033 | 85,477  | 119,677 | 1,515   |
+| claimPrize     | 29,600 | 43,463 | 34,076  | 60,889  | 5       |
+| claimRefund    | 29,578 | 36,071 | 31,873  | 43,516  | 5       |
+| closeSale      | 23,836 | 49,737 | 51,885  | 51,885  | 34      |
+| commitHash     | 24,537 | 92,675 | 102,968 | 102,968 | 29      |
+| revealAndDraw  | 24,517 | 58,404 | 77,928  | 77,928  | 17      |
+| slashOwner     | 25,901 | 31,055 | 32,617  | 32,617  | 7       |
+| startNewRound  | 23,815 | 30,991 | 31,732  | 35,203  | 6       |
+
+AFTER — src/gasOptimisedLottery.sol (optimised)
+
+| Function Name  | Min    | Avg    | Median  | Max     | # Calls |
+|----------------|--------|--------|---------|---------|---------|
+| buyTicket      | 25,940 | 91,692 | 85,477  | 119,677 | 1,598   |
+| claimPrize     | 29,600 | 43,463 | 34,076  | 60,889  | 5       |
+| claimRefund    | 29,578 | 36,071 | 31,873  | 43,516  | 5       |
+| closeSale      | 23,836 | 49,737 | 51,885  | 51,885  | 34      |
+| commitHash     | 24,537 | 92,675 | 102,968 | 102,968 | 29      |
+| revealAndDraw  | 24,517 | 58,404 | 77,928  | 77,928  | 17      |
+| slashOwner     | 25,901 | 31,055 | 32,617  | 32,617  | 7       |
+| startNewRound  | 23,815 | 30,991 | 31,732  | 35,203  | 6       |
 
 
-Ran 1 test suite in 239.91ms (176.66ms CPU time): 52 tests passed, 0 failed, 0 skipped (52 total tests)
+IDENTIFYING THE MOST EXPENSIVE FUNCTION
+-------------------------------------------------------------------------
+Ranked by Average Gas Cost (Before):
+1st: commitHash     (92,675 gas)
+2nd: buyTicket      (92,033 gas)
+3rd: revealAndDraw  (58,404 gas)
+4th: claimPrize     (43,463 gas)
 
-BEFORE / AFTER OPTIMISATION
---------------------------------
+Analysing the Cost:
+While commitHash is the single most expensive, it is a one-time fixed
+expense paid by the owner.
 
-Identifying the most expensive function:
-Prior to optimization, state-changing functions that interacted heavily with mappings, specifically 
-claimPrize() and revealAndDraw(), were the most expensive operations. claimPrize() consumed 324,374 gas, 
-and revealAndDraw() consumed 303,619 gas.
+buyTicket is the highest priority for optimisation because it is called
+by every participant (1,500+ calls in tests). Savings here scale
+directly with the number of users, reducing the entry cost for everyone.
 
-Targeted Change Made:
-Refactored the contract's storage architecture from using eight separate state mappings into a single 
-mapping(uint256 => Round). Inside the Round struct, utilized struct packing to fit multiple variables 
-into a single 32-byte storage slot (specifically packing the 20-byte 'winner' address, the 1-byte 
-'phase' enum, and the 1-byte 'prizeClaimed' boolean into Slot 0). I also implemented storage pointers 
-(e.g., Round storage round = rounds[_roundId];) inside the functions to cache the storage location.
 
-Record Before and After Gas Numbers:
+Gas Comparison (buyTicket):
+Metric       | Before  | After   | Saved
+-------------|---------|---------|---------
+Avg Gas      | 92,033  | 91,692  | 341 gas
+Min Gas      | 25,940  | 25,940  | 0 gas
+Max Gas      | 119,677 | 119,677 | 0 gas
 
-* claimPrize() (Test: test_ClaimPrize_WinnerReceivesPrize())
-  - Before: 324,374 gas
-  - After:  276,175 gas
-  - Gas Saved: 48,199 gas
 
-* revealAndDraw() (Test: test_RevealAndDraw_Success())
-  - Before: 303,619 gas
-  - After:  277,461 gas
-  - Gas Saved: 26,158 gas
-
-Explanation:
-In the Ethereum Virtual Machine (EVM), interacting with contract storage via the SLOAD and SSTORE
-opcodes is highly gas-intensive. In the unoptimized contract, updating the winner, phase, and prize 
-pool required calculating multiple separate hash map locations and executing separate, expensive 
-storage writes. 
-
-By packing the 'winner', 'phase', and 'prizeClaimed' variables into a single 32-byte slot within a 
-struct, the EVM can now update all three variables simultaneously with a single SSTORE operation. 
-Furthermore, using a memory pointer (Round storage round) ensures the EVM only calculates the 
-mapping's base storage hash once per function call, drastically reducing the overall execution cost.
+-------------------------------------------------------------------------
