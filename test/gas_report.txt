@@ -111,3 +111,41 @@ Suite result: ok. 52 passed; 0 failed; 0 skipped; finished in 176.66ms (351.34ms
 
 
 Ran 1 test suite in 239.91ms (176.66ms CPU time): 52 tests passed, 0 failed, 0 skipped (52 total tests)
+
+BEFORE / AFTER OPTIMISATION
+--------------------------------
+
+Identifying the most expensive function:
+Prior to optimization, state-changing functions that interacted heavily with mappings, specifically 
+claimPrize() and revealAndDraw(), were the most expensive operations. claimPrize() consumed 324,374 gas, 
+and revealAndDraw() consumed 303,619 gas.
+
+Targeted Change Made:
+Refactored the contract's storage architecture from using eight separate state mappings into a single 
+mapping(uint256 => Round). Inside the Round struct, utilized struct packing to fit multiple variables 
+into a single 32-byte storage slot (specifically packing the 20-byte 'winner' address, the 1-byte 
+'phase' enum, and the 1-byte 'prizeClaimed' boolean into Slot 0). I also implemented storage pointers 
+(e.g., Round storage round = rounds[_roundId];) inside the functions to cache the storage location.
+
+Record Before and After Gas Numbers:
+
+* claimPrize() (Test: test_ClaimPrize_WinnerReceivesPrize())
+  - Before: 324,374 gas
+  - After:  276,175 gas
+  - Gas Saved: 48,199 gas
+
+* revealAndDraw() (Test: test_RevealAndDraw_Success())
+  - Before: 303,619 gas
+  - After:  277,461 gas
+  - Gas Saved: 26,158 gas
+
+Explanation:
+In the Ethereum Virtual Machine (EVM), interacting with contract storage via the SLOAD and SSTORE
+opcodes is highly gas-intensive. In the unoptimized contract, updating the winner, phase, and prize 
+pool required calculating multiple separate hash map locations and executing separate, expensive 
+storage writes. 
+
+By packing the 'winner', 'phase', and 'prizeClaimed' variables into a single 32-byte slot within a 
+struct, the EVM can now update all three variables simultaneously with a single SSTORE operation. 
+Furthermore, using a memory pointer (Round storage round) ensures the EVM only calculates the 
+mapping's base storage hash once per function call, drastically reducing the overall execution cost.
