@@ -1,0 +1,115 @@
+[⠊] Compiling...
+No files changed, compilation skipped
+
+Ran 52 tests for test/lotterytest.t.sol:LotteryTest
+[PASS] test_BuyTicket_MultipleParticipants() (gas: 338212)
+[PASS] test_BuyTicket_RevertsAfterSaleClosed() (gas: 224849)
+[PASS] test_BuyTicket_RevertsInCommittedPhase() (gas: 429327)
+[PASS] test_BuyTicket_RevertsInDrawnPhase() (gas: 501499)
+[PASS] test_BuyTicket_RevertsOnWrongPrice_TooHigh() (gas: 46041)
+[PASS] test_BuyTicket_RevertsOnWrongPrice_TooLow() (gas: 45997)
+[PASS] test_BuyTicket_SameAddressMultipleTimes() (gas: 226587)
+[PASS] test_BuyTicket_Success() (gas: 161838)
+[PASS] test_ClaimPrize_RevertsForNonWinner() (gas: 506680)
+[PASS] test_ClaimPrize_RevertsIfNotDrawnPhase() (gas: 432045)
+[PASS] test_ClaimPrize_RevertsOnDoubleClaim() (gas: 537728)
+[PASS] test_ClaimPrize_WinnerReceivesPrize() (gas: 529123)
+[PASS] test_ClaimRefund_RevertsIfNoTickets() (gas: 385721)
+[PASS] test_ClaimRefund_RevertsIfNotSlashed() (gas: 432021)
+[PASS] test_ClaimRefund_RevertsOnDoubleRefund() (gas: 422684)
+[PASS] test_ClaimRefund_Success() (gas: 487516)
+[PASS] test_CloseSale_RevertsIfAlreadyClosed() (gas: 217853)
+[PASS] test_CloseSale_RevertsIfNoParticipants() (gas: 38865)
+[PASS] test_CloseSale_RevertsIfNotOwner() (gas: 161592)
+[PASS] test_CloseSale_Success() (gas: 192451)
+[PASS] test_CommitHash_RevertsIfNotOwner() (gas: 221283)
+[PASS] test_CommitHash_RevertsIfSaleNotClosed() (gas: 173208)
+[PASS] test_CommitHash_RevertsOnZeroHash() (gas: 225055)
+[PASS] test_CommitHash_RevertsWithNoCollateral() (gas: 220912)
+[PASS] test_CommitHash_Success() (gas: 318801)
+[PASS] test_Constructor_FirstRoundIsOpen() (gas: 16535)
+[PASS] test_Constructor_RevertsOnZeroTicketPrice() (gas: 510971)
+[PASS] test_Constructor_SetsTicketPrice() (gas: 7961)
+[PASS] test_GetParticipant_CorrectAddress() (gas: 253420)
+[PASS] test_GetParticipant_RevertsOnOutOfBounds() (gas: 141203)
+[PASS] test_MultiRound_RevertsIfCurrentRoundNotFinished() (gas: 165700)
+[PASS] test_MultiRound_RevertsIfRoundOpen() (gas: 36723)
+[PASS] test_MultiRound_StartNewRoundAfterDrawn() (gas: 516749)
+[PASS] test_MultiRound_StartNewRoundAfterSlashed() (gas: 492012)
+[PASS] test_MultiRound_StartNewRoundNotOwner() (gas: 489105)
+[PASS] test_MultiRound_StateIsolation() (gas: 682392)
+[PASS] test_PrizePool_ExactlyEqualsTicketPayments() (gas: 405635)
+[PASS] test_PrizePool_FuzzTicketCount(uint8) (runs: 256, μ: 683027, ~: 437920)
+[PASS] test_PrizePool_SingleTicket() (gas: 140091)
+[PASS] test_RevealAndDraw_CollateralReturnedToOwner() (gas: 475090)
+[PASS] test_RevealAndDraw_RevertsAfterBlockhashExpiry() (gas: 444682)
+[PASS] test_RevealAndDraw_RevertsBeforeTargetBlock() (gas: 444369)
+[PASS] test_RevealAndDraw_RevertsIfNotCommitted() (gas: 168857)
+[PASS] test_RevealAndDraw_RevertsIfNotOwner() (gas: 440312)
+[PASS] test_RevealAndDraw_RevertsOnEmptySecret() (gas: 446470)
+[PASS] test_RevealAndDraw_RevertsOnSecondCall() (gas: 494434)
+[PASS] test_RevealAndDraw_RevertsOnWrongSecret() (gas: 447144)
+[PASS] test_RevealAndDraw_Success() (gas: 474105)
+[PASS] test_SlashOwner_RevertsBeforeDeadline() (gas: 441248)
+[PASS] test_SlashOwner_RevertsIfNotCommitted() (gas: 163304)
+[PASS] test_SlashOwner_Success() (gas: 448608)
+[PASS] test_TotalTickets_ReturnsZeroForNewRound() (gas: 8553)
+Suite result: ok. 52 passed; 0 failed; 0 skipped; finished in 176.66ms (351.34ms CPU time)
+
+GAS REPORT
+-------------------------------------------------------------------------
+Generated with: forge test --match-path test/lotterytest.t.sol --gas-report
+
+BEFORE — src/lottery.sol (unoptimised)
+
+| Function Name  | Min    | Avg    | Median  | Max     | # Calls |
+|----------------|--------|--------|---------|---------|---------|
+| buyTicket      | 25,940 | 92,033 | 85,477  | 119,677 | 1,515   |
+| claimPrize     | 29,600 | 43,463 | 34,076  | 60,889  | 5       |
+| claimRefund    | 29,578 | 36,071 | 31,873  | 43,516  | 5       |
+| closeSale      | 23,836 | 49,737 | 51,885  | 51,885  | 34      |
+| commitHash     | 24,537 | 92,675 | 102,968 | 102,968 | 29      |
+| revealAndDraw  | 24,517 | 58,404 | 77,928  | 77,928  | 17      |
+| slashOwner     | 25,901 | 31,055 | 32,617  | 32,617  | 7       |
+| startNewRound  | 23,815 | 30,991 | 31,732  | 35,203  | 6       |
+
+AFTER — src/gasOptimisedLottery.sol (optimised)
+
+| Function Name  | Min    | Avg    | Median  | Max     | # Calls |
+|----------------|--------|--------|---------|---------|---------|
+| buyTicket      | 25,940 | 91,692 | 85,477  | 119,677 | 1,598   |
+| claimPrize     | 29,600 | 43,463 | 34,076  | 60,889  | 5       |
+| claimRefund    | 29,578 | 36,071 | 31,873  | 43,516  | 5       |
+| closeSale      | 23,836 | 49,737 | 51,885  | 51,885  | 34      |
+| commitHash     | 24,537 | 92,675 | 102,968 | 102,968 | 29      |
+| revealAndDraw  | 24,517 | 58,404 | 77,928  | 77,928  | 17      |
+| slashOwner     | 25,901 | 31,055 | 32,617  | 32,617  | 7       |
+| startNewRound  | 23,815 | 30,991 | 31,732  | 35,203  | 6       |
+
+
+IDENTIFYING THE MOST EXPENSIVE FUNCTION
+-------------------------------------------------------------------------
+Ranked by Average Gas Cost (Before):
+1st: commitHash     (92,675 gas)
+2nd: buyTicket      (92,033 gas)
+3rd: revealAndDraw  (58,404 gas)
+4th: claimPrize     (43,463 gas)
+
+Analysing the Cost:
+While commitHash is the single most expensive, it is a one-time fixed
+expense paid by the owner.
+
+buyTicket is the highest priority for optimisation because it is called
+by every participant (1,500+ calls in tests). Savings here scale
+directly with the number of users, reducing the entry cost for everyone.
+
+
+Gas Comparison (buyTicket):
+Metric       | Before  | After   | Saved
+-------------|---------|---------|---------
+Avg Gas      | 92,033  | 91,692  | 341 gas
+Min Gas      | 25,940  | 25,940  | 0 gas
+Max Gas      | 119,677 | 119,677 | 0 gas
+
+
+-------------------------------------------------------------------------
