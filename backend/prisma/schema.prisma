@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Phase {
+  Open
+  SaleClosed
+  Committed
+  Drawn
+  Slashed
+}
+
+model Round {
+  id             Int       @id // same as on-chain currentRound
+  phase          Phase     @default(Open)
+
+  secret         String?   // raw bytes32 hex stored off-chain here
+  committedHash  String?   // keccak256(abi.encodePacked(secret)) as 0x-prefixed hex
+  collateral     String?   // collateral sent with commitHash (wei, as string)
+  targetBlock    BigInt?   // block.number + 10 returned from contract
+
+  revealedAt     DateTime?
+  revealTxHash   String?
+
+  winner         String?   // winner wallet address
+  prizePool      String?   // prize pool in wei
+
+  commitTxHash   String?
+  closeSaleTxHash String?
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  userlog      UserLog[]
+}
+
+// Full audit trail for every owner action
+model UserLog {
+  id        Int      @id @default(autoincrement())
+  roundId   Int
+  round     Round    @relation(fields: [roundId], references: [id])
+  action    String   // "CREATE_SECRET" | "CLOSE_SALE" | "COMMIT_HASH" | "REVEAL"
+  txHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([roundId])
+}
