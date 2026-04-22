@@ -1,0 +1,63 @@
+[⠊] Compiling...
+[⠑] Compiling 37 files with Solc 0.8.33
+[⠘] Solc 0.8.33 finished in 641.71ms
+Analysing contracts...
+Running tests...
+
+Ran 45 tests for vrf/vrfchainlinkTest.t.sol:LotteryTest
+[PASS] test_BuyTicket_MultipleParticipants() (gas: 236997)
+[PASS] test_BuyTicket_RevertsAfterSaleClosed() (gas: 152225)
+[PASS] test_BuyTicket_RevertsInCommittedPhase() (gas: 406751)
+[PASS] test_BuyTicket_RevertsInDrawnPhase() (gas: 401742)
+[PASS] test_BuyTicket_RevertsOnWrongPrice_TooHigh() (gas: 24889)
+[PASS] test_BuyTicket_RevertsOnWrongPrice_TooLow() (gas: 24867)
+[PASS] test_BuyTicket_SameAddressMultipleTimes() (gas: 154818)
+[PASS] test_BuyTicket_Success() (gas: 122281)
+[PASS] test_ClaimPrize_RevertsForNonWinner() (gas: 399692)
+[PASS] test_ClaimPrize_RevertsIfNotDrawnPhase() (gas: 404938)
+[PASS] test_ClaimPrize_RevertsOnDoubleClaim() (gas: 425125)
+[PASS] test_ClaimPrize_WinnerReceivesPrize() (gas: 424270)
+[PASS] test_ClaimRefund_RevertsIfNoTickets() (gas: 414882)
+[PASS] test_ClaimRefund_RevertsIfNotSlashed() (gas: 404959)
+[PASS] test_ClaimRefund_RevertsOnDoubleRefund() (gas: 404229)
+[PASS] test_ClaimRefund_Success() (gas: 398411)
+[PASS] test_CloseSale_RevertsIfAlreadyClosed() (gas: 143138)
+[PASS] test_CloseSale_RevertsIfNoParticipants() (gas: 17727)
+[PASS] test_CloseSale_RevertsIfNotOwner() (gas: 119958)
+[PASS] test_CloseSale_Success() (gas: 142920)
+[PASS] test_Constructor_FirstRoundIsOpen() (gas: 11976)
+[PASS] test_Constructor_RevertsOnZeroTicketPrice() (gas: 112448)
+[PASS] test_Constructor_SetsTicketPrice() (gas: 8006)
+[PASS] test_FulfillVRF_DrawsWinner() (gas: 392845)
+[PASS] test_FulfillVRF_RevertsOnReplay() (gas: 391846)
+[PASS] test_FulfillVRF_WinnerIsParticipant() (gas: 391353)
+[PASS] test_GetParticipant_CorrectAddress() (gas: 180171)
+[PASS] test_GetParticipant_RevertsOnOutOfBounds() (gas: 118657)
+[PASS] test_MultiRound_RevertsIfCurrentRoundNotFinished() (gas: 120339)
+[PASS] test_MultiRound_RevertsIfRoundOpen() (gas: 15880)
+[PASS] test_MultiRound_StartNewRoundAfterDrawn() (gas: 401918)
+[PASS] test_MultiRound_StartNewRoundAfterSlashed() (gas: 414123)
+[PASS] test_MultiRound_StartNewRoundNotOwner() (gas: 391365)
+[PASS] test_MultiRound_StateIsolation() (gas: 512266)
+[PASS] test_PrizePool_ExactlyEqualsTicketPayments() (gas: 269908)
+[PASS] test_PrizePool_FuzzTicketCount(uint8) (runs: 256, μ: 395525, ~: 240910)
+[PASS] test_PrizePool_SingleTicket() (gas: 117507)
+[PASS] test_RequestDraw_RevertsIfNotCommitted() (gas: 397622)
+[PASS] test_RequestDraw_RevertsIfNotOwner() (gas: 143184)
+[PASS] test_RequestDraw_RevertsIfSaleNotClosed() (gas: 119914)
+[PASS] test_RequestDraw_Success() (gas: 340651)
+[PASS] test_SlashOwner_RevertsBeforeDeadline() (gas: 401454)
+[PASS] test_SlashOwner_RevertsIfNotCommitted() (gas: 117701)
+[PASS] test_SlashOwner_Success() (gas: 404140)
+[PASS] test_TotalTickets_ReturnsZeroForNewRound() (gas: 8590)
+Suite result: ok. 45 passed; 0 failed; 0 skipped; finished in 114.11ms (177.90ms CPU time)
+
+Ran 1 test suite in 115.17ms (114.11ms CPU time): 45 tests passed, 0 failed, 0 skipped (45 total tests)
+
+╭-----------------------------+-----------------+-----------------+----------------+-----------------╮
+| File                        | % Lines         | % Statements    | % Branches     | % Funcs         |
++====================================================================================================+
+| vrf/LotteryVRFChainlink.sol | 100.00% (72/72) | 100.00% (66/66) | 89.47% (34/38) | 100.00% (11/11) |
+|-----------------------------+-----------------+-----------------+----------------+-----------------|
+| Total                       | 100.00% (72/72) | 100.00% (66/66) | 89.47% (34/38) | 100.00% (11/11) |
+╰-----------------------------+-----------------+-----------------+----------------+-----------------╯
