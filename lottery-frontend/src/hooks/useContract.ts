@@ -1,92 +1,147 @@
-"use client";
+/**
+ * useContract — client-side hook for the user-facing lottery app.
+ *
+ * READ strategy: fetches from /api/rounds/[roundId] (server reads the chain
+ * via RPC, no wallet needed, works even when wallet is disconnected).
+ *
+ * WRITE strategy: only user-callable functions go through MetaMask here:
+ *   buyTicket, claimPrize(roundId), claimRefund(roundId), slashOwner
+ *
+ * Owner-only writes (closeSale, commitHash, revealAndDraw, startNewRound)
+ * live in useOwnerApi and are called server-side via /api/owner/* routes.
+ */
 
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { ethers } from "ethers";
 import { LOTTERY_ABI } from "@/abi/lottery";
 import { CONTRACT_ADDRESS } from "@/lib/constants";
-import { parseContractError, buildCommitHash, encodeSecret } from "@/lib/utils";
+import { parseContractError } from "@/lib/utils";
 import type { WalletState } from "./useWallet";
 
-export interface ContractState {
-  phase:            number;
-  prizePool:        bigint;
-  participantCount: bigint;
-  winner:           string;
-  owner:            string;
-  ticketPrice:      bigint;
-  hasTicket:        boolean;
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export interface RoundState {
+  roundId: number;
+  phase: string; // "Open" | "SaleClosed" | "Committed" | "Drawn" | "Slashed"
+  prizePool: string; // ETH string e.g. "1.25"
+  prizePoolWei: string;
+  totalTickets: number;
+  winner: string; // address or ZERO_ADDRESS
+  ticketPrice: string; // ETH string
+  ticketPriceWei: string;
+  targetBlock: number;
+  currentBlock: number;
+  blocksUntilReveal: number;
+  revealWindowExpiry: number;
+  isRevealWindowOpen: boolean;
+  prizeClaimed: boolean;
+  // User-specific (added client-side after fetch)
+  userTickets: number;
 }
 
-export interface TxResult { hash: string }
+export interface TxResult {
+  hash: string;
+}
 
 export interface UseContractReturn {
-  contractState: ContractState | undefined;
-  isLoading:     boolean;
-  error:         Error | undefined;
-  refreshState:  () => void;
-  buyTicket:     (valueEth: string) => Promise<TxResult>;
-  closeSale:     () => Promise<TxResult>;
-  commitHash:    (secret: string) => Promise<TxResult>;
-  revealAndDraw: (secret: string) => Promise<TxResult>;
-  claimPrize:    () => Promise<TxResult>;
+  roundState: RoundState | undefined;
+  currentRound: number | undefined;
+  isLoading: boolean;
+  error: Error | undefined;
+  refreshState: () => void;
+  buyTicket: (valueEth: string) => Promise<TxResult>;
+  claimPrize: (roundId: number) => Promise<TxResult>;
+  claimRefund: (roundId: number) => Promise<TxResult>;
+  slashOwner: () => Promise<TxResult>;
 }
 
-async function fetchContractState(
-  contractAddress: string,
-  userAddress: string | null
-): Promise<ContractState> {
-  if (!contractAddress) throw new Error("Contract address not configured.");
-  if (!window.ethereum)  throw new Error("No Ethereum provider found.");
+// ── Fetchers ──────────────────────────────────────────────────────────────────
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const contract = new ethers.Contract(contractAddress, LOTTERY_ABI, provider);
+/** Fetch current round number directly from the chain (no wallet needed) */
+async function fetchCurrentRound(): Promise<number> {
+  if (!CONTRACT_ADDRESS) throw new Error("Contract address not configured.");
+  // Use a public RPC provider for read-only — no wallet needed
+  const provider = new ethers.JsonRpcProvider(
+    process.env.NEXT_PUBLIC_RPC_URL ?? "",
+  );
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, LOTTERY_ABI, provider);
+  const round = await contract.currentRound();
+  return Number(round);
+}
 
-  const [phase, prizePool, participantCount, winner, owner, ticketPrice] =
-    await Promise.all([
-      contract.phase(),
-      contract.prizePool(),
-      contract.participantCount(),
-      contract.winner(),
-      contract.owner(),
-      contract.ticketPrice(),
-    ]);
+/** Fetch round state from our Next.js API (server reads RPC with OWNER key) */
+async function fetchRoundState(
+  roundId: number,
+  userAddress: string | null,
+): Promise<RoundState> {
+  const res = await fetch(`/api/rounds/${roundId}`, { cache: "no-store" });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? `API error ${res.status}`);
+  }
+  const data = (await res.json()) as RoundState;
 
-  let hasTicket = false;
-  if (userAddress) {
-    hasTicket = await contract.hasTicket(userAddress);
+  // Augment with user-specific ticket count (needs browser provider)
+  if (userAddress && window.ethereum) {
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        LOTTERY_ABI,
+        provider,
+      );
+      const tickets = await contract.userTickets(BigInt(roundId), userAddress);
+      data.userTickets = Number(tickets);
+    } catch {
+      data.userTickets = 0;
+    }
+  } else {
+    data.userTickets = 0;
   }
 
-  return {
-    phase:            Number(phase),
-    prizePool:        BigInt(prizePool),
-    participantCount: BigInt(participantCount),
-    winner:           winner as string,
-    owner:            owner  as string,
-    ticketPrice:      BigInt(ticketPrice),
-    hasTicket,
-  };
+  return data;
 }
 
-export function useContract(wallet: WalletState): UseContractReturn {
-  const swrKey = CONTRACT_ADDRESS
-    ? ["lottery", CONTRACT_ADDRESS, wallet.address]
-    : null;
+// ── Hook ──────────────────────────────────────────────────────────────────────
 
-  const { data, error, isLoading, mutate } = useSWR(
-    swrKey,
-    ([, addr, user]) => fetchContractState(addr, user),
-    { refreshInterval: 15_000, revalidateOnFocus: true }
+export function useContract(wallet: WalletState): UseContractReturn {
+  // Step 1: get current round number
+  const { data: currentRound } = useSWR(
+    CONTRACT_ADDRESS ? "currentRound" : null,
+    fetchCurrentRound,
+    { refreshInterval: 20_000 },
   );
 
+  // Step 2: get full round state for that round
+  const roundKey =
+    currentRound !== undefined
+      ? ["roundState", currentRound, wallet.address]
+      : null;
+
+  const {
+    data: roundState,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR(
+    roundKey,
+    ([, id, addr]) => fetchRoundState(id as number, addr as string | null),
+    { refreshInterval: 12_000, revalidateOnFocus: true },
+  );
+
+  // ── Write helpers ────────────────────────────────────────────────────────
+
   const getWriteContract = useCallback(() => {
-    if (!wallet.signer)           throw new Error("Wallet not connected.");
+    if (!wallet.signer) throw new Error("Wallet not connected.");
     if (!wallet.isCorrectNetwork) throw new Error("Wrong network selected.");
     return new ethers.Contract(CONTRACT_ADDRESS, LOTTERY_ABI, wallet.signer);
   }, [wallet.signer, wallet.isCorrectNetwork]);
 
   const sendTx = useCallback(
-    async (fn: () => Promise<ethers.ContractTransactionResponse>): Promise<TxResult> => {
+    async (
+      fn: () => Promise<ethers.ContractTransactionResponse>,
+    ): Promise<TxResult> => {
       try {
         const tx = await fn();
         await tx.wait(1);
@@ -96,51 +151,60 @@ export function useContract(wallet: WalletState): UseContractReturn {
         throw new Error(parseContractError(err));
       }
     },
-    [mutate]
+    [mutate],
   );
+
+  // ── User-callable write functions ────────────────────────────────────────
 
   const buyTicket = useCallback(
     (valueEth: string) =>
-      sendTx(() => getWriteContract().buyTicket({ value: ethers.parseEther(valueEth) })),
-    [sendTx, getWriteContract]
-  );
-
-  const closeSale = useCallback(
-    () => sendTx(() => getWriteContract().closeSale()),
-    [sendTx, getWriteContract]
-  );
-
-  const commitHash = useCallback(
-    (secret: string) =>
-      sendTx(() => getWriteContract().commitHash(buildCommitHash(secret))),
-    [sendTx, getWriteContract]
-  );
-
-  const revealAndDraw = useCallback(
-    (secret: string) =>
-      sendTx(() => getWriteContract().revealAndDraw(encodeSecret(secret))),
-    [sendTx, getWriteContract]
+      sendTx(() =>
+        getWriteContract().buyTicket({ value: ethers.parseEther(valueEth) }),
+      ),
+    [sendTx, getWriteContract],
   );
 
   const claimPrize = useCallback(
-    () => sendTx(() => getWriteContract().claimPrize()),
-    [sendTx, getWriteContract]
+    (roundId: number) =>
+      sendTx(() => getWriteContract().claimPrize(BigInt(roundId))),
+    [sendTx, getWriteContract],
+  );
+
+  const claimRefund = useCallback(
+    (roundId: number) =>
+      sendTx(() => getWriteContract().claimRefund(BigInt(roundId))),
+    [sendTx, getWriteContract],
+  );
+
+  const slashOwner = useCallback(
+    () => sendTx(() => getWriteContract().slashOwner()),
+    [sendTx, getWriteContract],
   );
 
   const refreshState = useCallback(() => mutate(), [mutate]);
 
   return useMemo(
     () => ({
-      contractState: data,
+      roundState,
+      currentRound,
       isLoading,
       error: error as Error | undefined,
       refreshState,
       buyTicket,
-      closeSale,
-      commitHash,
-      revealAndDraw,
       claimPrize,
+      claimRefund,
+      slashOwner,
     }),
-    [data, isLoading, error, refreshState, buyTicket, closeSale, commitHash, revealAndDraw, claimPrize]
+    [
+      roundState,
+      currentRound,
+      isLoading,
+      error,
+      refreshState,
+      buyTicket,
+      claimPrize,
+      claimRefund,
+      slashOwner,
+    ],
   );
 }

@@ -1,17 +1,30 @@
 "use client";
 
-import { Users, Trophy, RefreshCw, TrendingUp, Layers } from "lucide-react";
-import type { ContractState } from "@/hooks/useContract";
-import { PHASE_LABELS, PHASE_BADGE_STYLES, ZERO_ADDRESS } from "@/lib/constants";
-import { formatEth, shortAddress, etherscanAddr } from "@/lib/utils";
+import { Users, Trophy, RefreshCw, Layers, Clock, Ticket } from "lucide-react";
+import type { RoundState } from "@/hooks/useContract";
+import {
+  PHASE_LABELS,
+  PHASE_BADGE_STYLES,
+  PHASE_STEPS,
+  PHASE_STEP_LABELS,
+  ZERO_ADDRESS,
+} from "@/lib/constants";
+import {
+  formatEth,
+  shortAddress,
+  etherscanAddr,
+  formatBlockCountdown,
+} from "@/lib/utils";
+import { Key } from "react";
 
 interface LotteryStatusProps {
-  contractState: ContractState | undefined;
+  roundState: RoundState | undefined;
+  currentRound: number | undefined;
   isLoading: boolean;
   onRefresh: () => void;
 }
 
-function SkeletonBlock({ className = "" }: { className?: string }) {
+function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`skeleton rounded-lg ${className}`} />;
 }
 
@@ -36,18 +49,16 @@ function StatCard({
           : "border-lborder bg-lcard shadow-lcard"
       }`}
     >
-      {/* Top row */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-ldim">
           {label}
         </span>
-        <span className={`${accent ? "text-laccent" : "text-ldim"}`}>{icon}</span>
+        <span className={accent ? "text-laccent" : "text-ldim"}>{icon}</span>
       </div>
-      {/* Value */}
-      <div className="text-xl font-semibold tracking-tight text-ltext">{value}</div>
+      <div className="text-xl font-semibold tracking-tight text-ltext">
+        {value}
+      </div>
       {sub && <div className="mt-1 text-xs text-ldim">{sub}</div>}
-
-      {/* Subtle corner accent */}
       {accent && (
         <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full bg-laccent/5 blur-2xl" />
       )}
@@ -56,36 +67,43 @@ function StatCard({
 }
 
 export default function LotteryStatus({
-  contractState,
+  roundState,
+  currentRound,
   isLoading,
   onRefresh,
 }: LotteryStatusProps) {
-  const phase      = contractState?.phase ?? null;
-  const phaseLabel = phase !== null ? (PHASE_LABELS[phase] ?? "Unknown") : null;
-  const phaseStyle = phase !== null ? PHASE_BADGE_STYLES[phase] : null;
+  const phase = roundState?.phase ?? null;
+  const phaseLabel = phase ? (PHASE_LABELS[phase as any] ?? phase) : null;
+  const phaseStyle = phase ? PHASE_BADGE_STYLES[phase as any] : null;
+  const hasWinner = roundState?.winner && roundState.winner !== ZERO_ADDRESS;
+  const isSlashed = phase === "Slashed";
 
-  const hasWinner =
-    contractState?.winner &&
-    contractState.winner !== ZERO_ADDRESS;
+  // Block reveal countdown
+  const showCountdown = phase === "Committed" && roundState;
+  const blocksLeft = roundState?.blocksUntilReveal ?? 0;
+  const windowExpired =
+    showCountdown && roundState.currentBlock > roundState.revealWindowExpiry;
+  const canReveal = roundState?.isRevealWindowOpen;
 
   return (
     <section className="animate-slide-up rounded-2xl border border-lborder bg-lsurface shadow-lpanel">
-      {/* ── Card header ─────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-lborder px-3 sm:px-6 py-4">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-lborder px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-laccent/10">
             <Layers className="h-4 w-4 text-laccent" />
           </div>
           <div>
             <h2 className="font-display text-[15px] font-semibold tracking-tight text-ltext">
-              Lottery Overview
+              Round {currentRound !== undefined ? `#${currentRound}` : "—"}{" "}
+              Overview
             </h2>
-            <p className="text-[11px] text-ldim">Live contract state · refreshes every 15s</p>
+            <p className="text-[11px] text-ldim">
+              Live contract state · auto-refreshes
+            </p>
           </div>
         </div>
-
         <div className="flex items-center gap-3">
-          {/* Phase badge */}
           {phaseStyle && phaseLabel && (
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${phaseStyle.badge}`}
@@ -94,33 +112,84 @@ export default function LotteryStatus({
               {phaseLabel}
             </span>
           )}
-          {/* Refresh */}
           <button
             onClick={onRefresh}
             disabled={isLoading}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-lborder text-ldim transition-all hover:border-lborderhi hover:text-ltext disabled:opacity-40"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`}
+            />
           </button>
         </div>
       </div>
 
-      {/* ── Stats grid ─────────────────────────────────────────────────── */}
-      <div className="p-3 sm:p-6">
-        {isLoading && !contractState ? (
+      <div className="p-6">
+        {isLoading && !roundState ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <SkeletonBlock key={i} className="h-24" />
+              <Skeleton key={i} className="h-24" />
             ))}
           </div>
-        ) : contractState ? (
+        ) : roundState ? (
           <>
+            {/* Slashed warning */}
+            {isSlashed && (
+              <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/8 px-4 py-3.5 text-sm text-red-400">
+                <span className="text-lg">⚠</span>
+                <div>
+                  <p className="font-semibold">Owner Slashed</p>
+                  <p className="mt-0.5 text-red-400/70 text-xs">
+                    The owner failed to reveal within the 250-block window.
+                    Their collateral was confiscated. Participants can claim a
+                    refund.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Reveal countdown (Committed phase) */}
+            {showCountdown && (
+              <div
+                className={`mb-5 flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm ${
+                  windowExpired
+                    ? "border-red-500/30 bg-red-500/8 text-red-400"
+                    : canReveal
+                      ? "border-emerald-500/30 bg-emerald-500/8 text-emerald-400"
+                      : "border-yellow-500/30 bg-yellow-500/8 text-yellow-400"
+                }`}
+              >
+                <Clock className="h-4 w-4 shrink-0" />
+                <div>
+                  {windowExpired ? (
+                    <span className="font-semibold">
+                      Reveal window expired — owner can be slashed!
+                    </span>
+                  ) : canReveal ? (
+                    <span className="font-semibold">
+                      Reveal window is open — owner should reveal now.
+                    </span>
+                  ) : (
+                    <span>
+                      <span className="font-semibold">
+                        Waiting for target block.
+                      </span>{" "}
+                      {blocksLeft} blocks remaining (~
+                      {formatBlockCountdown(blocksLeft)}). Target: #
+                      {roundState.targetBlock}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Stats grid */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <StatCard
                 icon={<Layers className="h-4 w-4" />}
-                label="Current Phase"
+                label="Phase"
                 value={phaseLabel ?? "—"}
-                sub={`Stage ${phase} of 3`}
+                sub={`Round #${currentRound}`}
                 accent
               />
               <StatCard
@@ -128,17 +197,17 @@ export default function LotteryStatus({
                 label="Prize Pool"
                 value={
                   <span className="flex items-baseline gap-1">
-                    <span>{formatEth(contractState.prizePool)}</span>
+                    <span>{formatEth(roundState.prizePool as any)}</span>
                     <span className="text-sm font-normal text-ldim">ETH</span>
                   </span>
                 }
                 sub="Total collected"
               />
               <StatCard
-                icon={<Users className="h-4 w-4" />}
-                label="Participants"
-                value={contractState.participantCount.toString()}
-                sub="Unique ticket holders"
+                icon={<Ticket className="h-4 w-4" />}
+                label="Tickets Sold"
+                value={roundState.totalTickets.toString()}
+                sub={`@ ${formatEth(roundState.ticketPrice as any)} ETH each`}
               />
               <StatCard
                 icon={<Trophy className="h-4 w-4" />}
@@ -146,68 +215,71 @@ export default function LotteryStatus({
                 value={
                   hasWinner ? (
                     <a
-                      href={etherscanAddr(contractState.winner)}
+                      href={etherscanAddr(roundState.winner)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-mono text-base text-laccent underline-offset-2 hover:underline"
                     >
-                      {shortAddress(contractState.winner)}
+                      {shortAddress(roundState.winner)}
                     </a>
                   ) : (
                     <span className="text-base font-normal text-ldim">—</span>
                   )
                 }
-                sub={hasWinner ? "Prize claimable" : "Not yet drawn"}
+                sub={
+                  hasWinner
+                    ? roundState.prizeClaimed
+                      ? "Prize claimed ✓"
+                      : "Prize claimable"
+                    : "Not yet drawn"
+                }
               />
             </div>
 
-            {/* ── Phase progress track ──────────────────────────────── */}
+            {/* Phase progress stepper */}
             <div className="mt-6 rounded-xl border border-lborder bg-lcard p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-ldim">
                   Round Progress
                 </span>
                 <span className="text-[11px] text-ldim">
-                  {phase !== null ? `Step ${phase + 1} of 4` : "—"}
+                  Block #{roundState.currentBlock.toLocaleString()}
                 </span>
               </div>
-
-              {/* Steps */}
               <div className="relative flex items-center">
-                {/* Connecting line */}
                 <div className="absolute left-0 right-0 top-[11px] h-px bg-lborder" />
                 <div
-                  className="absolute left-0 top-[11px] h-px bg-laccent transition-all duration-700"
-                  style={{ width: `${phase !== null ? (phase / 3) * 100 : 0}%` }}
+                  className={`absolute left-0 top-[11px] h-px transition-all duration-700 ${isSlashed ? "bg-red-400" : "bg-laccent"}`}
+                  style={{
+                    width: `${Math.min(100, (PHASE_STEPS.indexOf(phase as (typeof PHASE_STEPS)[number]) / (PHASE_STEPS.length - 1)) * 100)}%`,
+                  }}
                 />
-
-                {[
-                  { label: "Open",       n: 0 },
-                  { label: "Closed",     n: 1 },
-                  { label: "Committed",  n: 2 },
-                  { label: "Drawn",      n: 3 },
-                ].map(({ label, n }) => {
-                  const done    = (phase ?? -1) > n;
-                  const current = phase === n;
+                {PHASE_STEPS.map((step: Key | null | undefined, n: number) => {
+                  const stepIdx = PHASE_STEPS.indexOf(
+                    phase as (typeof PHASE_STEPS)[number],
+                  );
+                  const done = stepIdx > n;
+                  const current = stepIdx === n;
                   return (
-                    <div key={n} className="relative flex flex-1 flex-col items-center gap-2">
+                    <div
+                      key={step}
+                      className="relative flex flex-1 flex-col items-center gap-2"
+                    >
                       <div
                         className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 text-[9px] font-bold transition-all ${
                           done
                             ? "border-laccent bg-laccent text-white"
                             : current
-                            ? "border-laccent bg-lbg text-laccent ring-4 ring-laccent/20"
-                            : "border-lborder bg-lbg text-ldim"
+                              ? "border-laccent bg-lbg text-laccent ring-4 ring-laccent/20"
+                              : "border-lborder bg-lbg text-ldim"
                         }`}
                       >
                         {done ? "✓" : n + 1}
                       </div>
                       <span
-                        className={`text-[10px] font-medium ${
-                          current ? "text-laccent" : done ? "text-lsubtle" : "text-ldim"
-                        }`}
+                        className={`text-[10px] font-medium ${current ? "text-laccent" : done ? "text-lsubtle" : "text-ldim"}`}
                       >
-                        {label}
+                        {PHASE_STEP_LABELS[step as any]}
                       </span>
                     </div>
                   );
@@ -218,7 +290,8 @@ export default function LotteryStatus({
         ) : (
           <div className="py-10 text-center">
             <p className="text-sm text-ldim">
-              Could not load contract data. Verify the contract address and network.
+              Could not load contract data. Verify the contract address and
+              network.
             </p>
           </div>
         )}
