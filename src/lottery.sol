@@ -27,21 +27,31 @@ contract Lottery is Ownable, ReentrancyGuard {
         Slashed          // Phase triggered if owner withholds reveal
     }
     
+
+    struct Round {
+        // SLOT 0: 22 bytes used (fits inside 32 bytes to save SLOAD/SSTORE costs)
+        address winner;             // 20 bytes
+        Phase phase;                // 1 byte
+        bool prizeClaimed;          // 1 byte
+        
+        // SLOT 1 - 4
+        bytes32 committedHash;      // 32 bytes
+        uint256 prizePool;          // 32 bytes
+        uint256 targetBlock;        // 32 bytes
+        uint256 lockedCollateral;   // 32 bytes
+        
+        // Dynamic Data
+        address[] participants; 
+        mapping(address => uint256) userTickets;
+    }
+
     uint256 public ticketPrice;
     uint256 public currentRound;
 
-    // --- State variables are now mapped by round ID ---
-    mapping(uint256 => Phase) public phase;
-    mapping(uint256 => address[]) private participants; 
-    mapping(uint256 => bytes32) public committedHash;
-    mapping(uint256 => address) public winner;
-    mapping(uint256 => uint256) public prizePool;      
-    mapping(uint256 => uint256) public targetBlock;
-    mapping(uint256 => uint256) public lockedCollateral;
-    mapping(uint256 => mapping(address => uint256)) public userTickets;
-    mapping(uint256 => bool) public prizeClaimed; 
+    // A single mapping replaces the 8 separate mappings from before
+    mapping(uint256 => Round) private rounds;
     
-    // --- Events now include the roundId ---
+
     event RoundStarted(uint256 indexed roundId);
     event TicketPurchased(uint256 indexed roundId, address indexed buyer, uint256 ticketId);
     event SaleClosed(uint256 indexed roundId);
@@ -57,7 +67,7 @@ contract Lottery is Ownable, ReentrancyGuard {
         
         // Initialize the first round
         currentRound = 1;
-        phase[currentRound] = Phase.Open;
+        rounds[currentRound].phase = Phase.Open;
         emit RoundStarted(currentRound);
     }
 
@@ -67,24 +77,25 @@ contract Lottery is Ownable, ReentrancyGuard {
      */
     function startNewRound() external onlyOwner {
         require(
-            phase[currentRound] == Phase.Drawn || phase[currentRound] == Phase.Slashed,
+            rounds[currentRound].phase == Phase.Drawn || rounds[currentRound].phase == Phase.Slashed,
             "Lottery: current round not finished"
         );
         
         currentRound++;
-        phase[currentRound] = Phase.Open;
+        rounds[currentRound].phase = Phase.Open;
         
         emit RoundStarted(currentRound);
     }
 
     function buyTicket() external payable {
-        require(phase[currentRound] == Phase.Open, "Lottery: sale is closed");              // sale must be in open phase
-        require(msg.value == ticketPrice, "Lottery: incorrect ticket price");               // ticket price must match
+        Round storage round = rounds[currentRound];
+        require(round.phase == Phase.Open, "Lottery: sale is closed");              // sale must be in open phase
+        require(msg.value == ticketPrice, "Lottery: incorrect ticket price");                // ticket price must match
 
-        uint256 ticketId = participants[currentRound].length;                               // effects
-        participants[currentRound].push(msg.sender);
-        prizePool[currentRound] += msg.value;
-        userTickets[currentRound][msg.sender]++; // Track individual ticket counts for refunds
+        uint256 ticketId = round.participants.length;                                // effects
+        round.participants.push(msg.sender);
+        round.prizePool += msg.value;
+        round.userTickets[msg.sender]++; // Track individual ticket counts for refunds
 
         emit TicketPurchased(currentRound, msg.sender, ticketId);
     }
@@ -94,10 +105,11 @@ contract Lottery is Ownable, ReentrancyGuard {
      * Must be called before commitHash().
      */
     function closeSale() external onlyOwner {
-        require(phase[currentRound] == Phase.Open, "Lottery: sale is not open");
-        require(participants[currentRound].length > 0, "Lottery: no participants to close sale for");
+        Round storage round = rounds[currentRound];
+        require(round.phase == Phase.Open, "Lottery: sale is not open");
+        require(round.participants.length > 0, "Lottery: no participants to close sale for");
 
-        phase[currentRound] = Phase.SaleClosed;
+        round.phase = Phase.SaleClosed;
         emit SaleClosed(currentRound);
     }
 
@@ -107,38 +119,40 @@ contract Lottery is Ownable, ReentrancyGuard {
       @param  hash:  keccak256(abi.encodePacked(secret)) — computed off-chain.
      */
     function commitHash(bytes32 _hash) external payable onlyOwner {
-        require(phase[currentRound] == Phase.SaleClosed, "Lottery: must close sale first");           // lottery sale should be closed
-        require(_hash != bytes32(0), "Lottery: hash cannot be zero");                                 // hash is non zero to prevent empty commit
-        require(participants[currentRound].length > 0, "Lottery: no participants");
-        require(msg.value > 0, "Lottery: must deposit collateral");                                   // Enforce penalty stake
+        Round storage round = rounds[currentRound];
+        require(round.phase == Phase.SaleClosed, "Lottery: must close sale first");            // lottery sale should be closed
+        require(_hash != bytes32(0), "Lottery: hash cannot be zero");                                  // hash is non zero to prevent empty commit
+        require(round.participants.length > 0, "Lottery: no participants");
+        require(msg.value > 0, "Lottery: must deposit collateral");                                    // Enforce penalty stake
 
-        lockedCollateral[currentRound] = msg.value;                                                   // Lock the penalty funds
-        targetBlock[currentRound] = block.number + 10;                                                // will require the blockhash 10 blocks from now
+        round.lockedCollateral = msg.value;                                                    // Lock the penalty funds
+        round.targetBlock = block.number + 10;                                                 // will require the blockhash 10 blocks from now
 
-        committedHash[currentRound] = _hash;
-        phase[currentRound] = Phase.Committed;
+        round.committedHash = _hash;
+        round.phase = Phase.Committed;
 
         emit HashCommitted(currentRound, _hash);
     }
 
-      //@param  _secret  The raw secret value committed to via commitHash().   Passes through calldata only; never written to storage.
+      //@param  _secret  The raw secret value committed to via commitHash().  Passes through calldata only; never written to storage.
       //  Owner reveals the secret, verifies it against the committed. Hash, draws the winner deterministically.
     function revealAndDraw(bytes32 _secret) external onlyOwner {
-        require(phase[currentRound] == Phase.Committed, "Lottery: not in committed phase");               // phase must be in commit
-        require(block.number > targetBlock[currentRound], "Lottery: target block not mined yet");         // Wait for target block
-        require(block.number <= targetBlock[currentRound] + 250, "Lottery: blockhash expired");           // Enforce reveal deadline
+        Round storage round = rounds[currentRound];
+        require(round.phase == Phase.Committed, "Lottery: not in committed phase");                // phase must be in commit
+        require(block.number > round.targetBlock, "Lottery: target block not mined yet");          // Wait for target block
+        require(block.number <= round.targetBlock + 250, "Lottery: blockhash expired");            // Enforce reveal deadline
 
         // Verify the secret matches what was committed revert if not
         require(
-            keccak256(abi.encodePacked(_secret)) == committedHash[currentRound],
+            keccak256(abi.encodePacked(_secret)) == round.committedHash,
             "Lottery: secret does not match committed hash"
         );
 
         // Cache storage read (gas optimisation — avoids repeated SLOAD).
-        uint256 totalParticipants = participants[currentRound].length;
+        uint256 totalParticipants = round.participants.length;
 
         // Fetch the future blockhash
-        bytes32 futureBlockHash = blockhash(targetBlock[currentRound]);
+        bytes32 futureBlockHash = blockhash(round.targetBlock);
         require(futureBlockHash != bytes32(0), "Lottery: blockhash is zero");
 
         uint256 winnerIndex = uint256(
@@ -152,23 +166,24 @@ contract Lottery is Ownable, ReentrancyGuard {
         ) % totalParticipants;
 
 
-        winner[currentRound] = participants[currentRound][winnerIndex];
-        phase[currentRound]  = Phase.Drawn;
+        round.winner = round.participants[winnerIndex];
+        round.phase  = Phase.Drawn;
         
         // Return collateral to the honest owner
-        uint256 collateralToReturn = lockedCollateral[currentRound];
-        lockedCollateral[currentRound] = 0;
+        uint256 collateralToReturn = round.lockedCollateral;
+        round.lockedCollateral = 0;
         (bool success, ) = msg.sender.call{value: collateralToReturn}("");
         require(success, "Lottery: collateral return failed");
 
-        emit WinnerDrawn(currentRound, winner[currentRound], prizePool[currentRound]);
+        emit WinnerDrawn(currentRound, round.winner, round.prizePool);
     }
 
     function slashOwner() external {
-        require(phase[currentRound] == Phase.Committed, "Lottery: not in committed phase");
-        require(block.number > targetBlock[currentRound] + 250, "Lottery: reveal deadline not passed");
+        Round storage round = rounds[currentRound];
+        require(round.phase == Phase.Committed, "Lottery: not in committed phase");
+        require(block.number > round.targetBlock + 250, "Lottery: reveal deadline not passed");
         
-        phase[currentRound] = Phase.Slashed;
+        round.phase = Phase.Slashed;
         emit OwnerSlashed(currentRound);
     }
 
@@ -178,15 +193,16 @@ contract Lottery is Ownable, ReentrancyGuard {
      * Follows checks-effects-interactions pattern.
      */
     function claimPrize(uint256 _roundId) external nonReentrant {
+        Round storage round = rounds[_roundId];
         // Access control — only the drawn winner may claim
-        require(phase[_roundId] == Phase.Drawn, "Lottery: prize not yet available");
-        require(msg.sender == winner[_roundId], "Lottery: caller is not the winner");
-        require(!prizeClaimed[_roundId], "Lottery: prize already claimed");
+        require(round.phase == Phase.Drawn, "Lottery: prize not yet available");
+        require(msg.sender == round.winner, "Lottery: caller is not the winner");
+        require(!round.prizeClaimed, "Lottery: prize already claimed");
 
         // Effects before interaction (CEI pattern)
-        uint256 payout = prizePool[_roundId];
-        prizePool[_roundId]    = 0;
-        prizeClaimed[_roundId] = true;
+        uint256 payout = round.prizePool;
+        round.prizePool    = 0;
+        round.prizeClaimed = true;
 
         // Interaction — send ETH last
         (bool success, ) = msg.sender.call{value: payout}("");
@@ -196,16 +212,17 @@ contract Lottery is Ownable, ReentrancyGuard {
     }
 
     function claimRefund(uint256 _roundId) external nonReentrant {
-        require(phase[_roundId] == Phase.Slashed, "Lottery: owner not slashed");          // lottery must be in slashed phase to get a refund
+        Round storage round = rounds[_roundId];
+        require(round.phase == Phase.Slashed, "Lottery: owner not slashed");          // lottery must be in slashed phase to get a refund
         
-        uint256 tickets = userTickets[_roundId][msg.sender];
+        uint256 tickets = round.userTickets[msg.sender];
         require(tickets > 0, "Lottery: no tickets to refund");
 
-        userTickets[_roundId][msg.sender] = 0;                                            // Prevent re-claiming
+        round.userTickets[msg.sender] = 0;                                            // Prevent re-claiming
 
         // Proportional refund: Ticket Cost + Cut of Owner's Collateral
-        uint256 totalFundsAvailable = prizePool[_roundId] + lockedCollateral[_roundId];
-        uint256 refundAmount = (tickets * totalFundsAvailable) / participants[_roundId].length;
+        uint256 totalFundsAvailable = round.prizePool + round.lockedCollateral;
+        uint256 refundAmount = (tickets * totalFundsAvailable) / round.participants.length;
 
         (bool success, ) = msg.sender.call{value: refundAmount}("");
         require(success, "Lottery: refund transfer failed");
@@ -217,12 +234,24 @@ contract Lottery is Ownable, ReentrancyGuard {
 
     /// @notice Returns the total number of tickets sold for a specific round.
     function totalTickets(uint256 _roundId) external view returns (uint256) {
-        return participants[_roundId].length;
+        return rounds[_roundId].participants.length;
     }
 
     /// @notice Returns the ticket holder at a given index (ticket ID) for a specific round.
     function getParticipant(uint256 _roundId, uint256 index) external view returns (address) {
-        require(index < participants[_roundId].length, "Lottery: index out of bounds");
-        return participants[_roundId][index];
+        require(index < rounds[_roundId].participants.length, "Lottery: index out of bounds");
+        return rounds[_roundId].participants[index];
     }
+    
+    // =============================================================
+    // GETTERS (To replicate original public mapping interface)
+    // =============================================================
+    function phase(uint256 _roundId) external view returns (Phase) { return rounds[_roundId].phase; }
+    function committedHash(uint256 _roundId) external view returns (bytes32) { return rounds[_roundId].committedHash; }
+    function winner(uint256 _roundId) external view returns (address) { return rounds[_roundId].winner; }
+    function prizePool(uint256 _roundId) external view returns (uint256) { return rounds[_roundId].prizePool; }
+    function targetBlock(uint256 _roundId) external view returns (uint256) { return rounds[_roundId].targetBlock; }
+    function lockedCollateral(uint256 _roundId) external view returns (uint256) { return rounds[_roundId].lockedCollateral; }
+    function prizeClaimed(uint256 _roundId) external view returns (bool) { return rounds[_roundId].prizeClaimed; }
+    function userTickets(uint256 _roundId, address _user) external view returns (uint256) { return rounds[_roundId].userTickets[_user]; }
 }
