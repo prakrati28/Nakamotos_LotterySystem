@@ -246,16 +246,9 @@ export default function UserActions({
               <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm text-ldim">
                 Ξ
               </div>
-              <input
-                type="number"
-                step="0.001"
-                min="0"
-                value={ethAmount}
-                onChange={(e) => setEthAmount(e.target.value)}
-                placeholder={ticketPrice || "0.01"}
-                disabled={!canBuy || isBuying}
-                className="w-full rounded-lg border border-lborder bg-lsurface py-2.5 pl-8 pr-4 font-mono text-sm text-ltext placeholder-ldim outline-none transition-all focus:border-laccent/60 focus:ring-2 focus:ring-laccent/15 disabled:opacity-50"
-              />
+              <div className="w-full rounded-lg border border-lborder bg-lsurface py-2.5 pl-8 pr-4 font-mono text-sm text-ltext placeholder-ldim outline-none transition-all focus:border-laccent/60 focus:ring-2 focus:ring-laccent/15 disabled:opacity-50">
+                {ticketPrice}
+              </div>
             </div>
             <button
               onClick={handleBuy}
