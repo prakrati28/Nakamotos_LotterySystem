@@ -11,14 +11,10 @@ export const ETHERSCAN_BASE =
   process.env.NEXT_PUBLIC_ETHERSCAN_BASE_URL ?? "https://sepolia.etherscan.io";
 
 export const TICKET_PRICE_ETH =
-  process.env.NEXT_PUBLIC_TICKET_PRICE_ETH ?? "0.01";
+  process.env.NEXT_PUBLIC_TICKET_PRICE_ETH ?? "0.00000001";
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-/**
- * Phase string values — must match PHASE_MAP in abi/lottery.ts exactly.
- * The contract uses: Open(0) SaleClosed(1) Committed(2) Drawn(3) Slashed(4)
- */
 export const PHASE_LABELS: Record<string, string> = {
   Open: "Open",
   SaleClosed: "Sale Closed",
@@ -53,7 +49,6 @@ export const PHASE_BADGE_STYLES: Record<
   },
 };
 
-/** Steps for the phase progress bar — in order */
 export const PHASE_STEPS = [
   "Open",
   "SaleClosed",

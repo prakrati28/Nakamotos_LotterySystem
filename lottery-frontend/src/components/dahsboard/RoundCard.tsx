@@ -70,6 +70,7 @@ function ActionButton({
   icon,
   onClick,
   disabled,
+  isLoading = false,
   variant = "default",
 }: {
   label: string;
@@ -77,6 +78,7 @@ function ActionButton({
   icon: React.ReactNode;
   onClick: () => void;
   disabled: boolean;
+  isLoading?: boolean;
   variant?: "default" | "warn" | "success";
 }) {
   const colors = {
@@ -87,15 +89,15 @@ function ActionButton({
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || isLoading}
       className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${colors[variant]}`}
     >
-      {disabled ? (
+      {isLoading ? (
         <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
       ) : (
         icon
       )}
-      {disabled ? loadingLabel : label}
+      {isLoading ? loadingLabel : label}
     </button>
   );
 }
@@ -306,7 +308,8 @@ export default function RoundCard({
                       onClick={makeAction("Close sale", () =>
                         api.closeSale(round.id),
                       )}
-                      disabled={!canClose || isPendingClose}
+                      disabled={!canClose}
+                      isLoading={isPendingClose}
                       variant="warn"
                     />
                   </div>
@@ -337,7 +340,8 @@ export default function RoundCard({
                       onClick={makeAction("Generate secret", () =>
                         api.generateSecret(round.id),
                       )}
-                      disabled={!canSecret || isPendingSecret}
+                      disabled={!canSecret}
+                      isLoading={isPendingSecret}
                     />
                   </div>
 
@@ -379,7 +383,8 @@ export default function RoundCard({
                       onClick={makeAction("Commit hash", () =>
                         api.commitHash(round.id, collateral),
                       )}
-                      disabled={!canCommit || isPendingCommit}
+                      disabled={!canCommit}
+                      isLoading={isPendingCommit}
                     />
                   </div>
 
@@ -408,7 +413,8 @@ export default function RoundCard({
                       onClick={makeAction("Reveal and draw", () =>
                         api.revealAndDraw(round.id),
                       )}
-                      disabled={!canReveal || isPendingReveal}
+                      disabled={!canReveal}
+                      isLoading={isPendingReveal}
                       variant="success"
                     />
                   </div>

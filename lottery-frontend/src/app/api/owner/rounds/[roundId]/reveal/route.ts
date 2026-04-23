@@ -35,7 +35,6 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       );
     }
 
-    // Safety check: verify the stored secret still matches
     if (!verifyHash(round.secret, round.committedHash)) {
       return NextResponse.json(
         {
@@ -56,7 +55,6 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       );
     }
 
-    // Block window check
     const provider = getServerProvider();
     const currentBlock = await provider.getBlockNumber();
     const targetBlock = round.targetBlock ? Number(round.targetBlock) : 0;

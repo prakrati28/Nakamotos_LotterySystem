@@ -1,20 +1,9 @@
-/**
- * Owner authentication for Next.js API routes.
- *
- * Checks the `x-owner-key` header against OWNER_API_KEY env var.
- * All /api/owner/* routes call this before doing anything else.
- *
- * Usage in a route handler:
- *   const authError = requireOwnerAuth(request);
- *   if (authError) return authError;
- */
 import { NextRequest, NextResponse } from "next/server";
 
 export function requireOwnerAuth(req: NextRequest): NextResponse | null {
   const apiKey = process.env.OWNER_API_KEY;
 
   if (!apiKey) {
-    // Misconfigured server — fail closed
     return NextResponse.json(
       { error: "Server misconfigured: OWNER_API_KEY is not set." },
       { status: 500 },
@@ -29,5 +18,5 @@ export function requireOwnerAuth(req: NextRequest): NextResponse | null {
     );
   }
 
-  return null; // auth passed
+  return null;
 }

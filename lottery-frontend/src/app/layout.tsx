@@ -3,7 +3,6 @@ import { Syne } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-// Load Syne via next/font for optimal performance (no FOUC)
 const syne = Syne({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],

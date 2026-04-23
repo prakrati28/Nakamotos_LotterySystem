@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerContract, getOnChainPhase } from "@/lib/server/contract";
+import { getServerContract } from "@/lib/server/contract";
 import { PHASE_MAP } from "@/abi/lottery";
 import { ethers } from "ethers";
 
@@ -33,7 +33,6 @@ export async function GET(
       contract.prizeClaimed(BigInt(roundId)),
     ]);
 
-    // Current block for reveal countdown
     const provider = contract.runner?.provider as ethers.JsonRpcProvider;
     const currentBlock = await provider.getBlockNumber();
 

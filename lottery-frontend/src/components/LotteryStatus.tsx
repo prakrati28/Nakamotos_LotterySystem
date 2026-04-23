@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Trophy, RefreshCw, Layers, Clock, Ticket } from "lucide-react";
+import { Trophy, RefreshCw, Layers, Clock, Ticket } from "lucide-react";
 import type { RoundState } from "@/hooks/useContract";
 import {
   PHASE_LABELS,
@@ -78,7 +78,6 @@ export default function LotteryStatus({
   const hasWinner = roundState?.winner && roundState.winner !== ZERO_ADDRESS;
   const isSlashed = phase === "Slashed";
 
-  // Block reveal countdown
   const showCountdown = phase === "Committed" && roundState;
   const blocksLeft = roundState?.blocksUntilReveal ?? 0;
   const windowExpired =
@@ -87,7 +86,6 @@ export default function LotteryStatus({
 
   return (
     <section className="animate-slide-up rounded-2xl border border-lborder bg-lsurface shadow-lpanel">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-lborder px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-laccent/10">
@@ -133,7 +131,6 @@ export default function LotteryStatus({
           </div>
         ) : roundState ? (
           <>
-            {/* Slashed warning */}
             {isSlashed && (
               <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/8 px-4 py-3.5 text-sm text-red-400">
                 <span className="text-lg">⚠</span>
@@ -148,7 +145,6 @@ export default function LotteryStatus({
               </div>
             )}
 
-            {/* Reveal countdown (Committed phase) */}
             {showCountdown && (
               <div
                 className={`mb-5 flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm ${
@@ -183,7 +179,6 @@ export default function LotteryStatus({
               </div>
             )}
 
-            {/* Stats grid */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <StatCard
                 icon={<Layers className="h-4 w-4" />}
@@ -236,7 +231,6 @@ export default function LotteryStatus({
               />
             </div>
 
-            {/* Phase progress stepper */}
             <div className="mt-6 rounded-xl border border-lborder bg-lcard p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-widest text-ldim">

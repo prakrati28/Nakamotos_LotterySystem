@@ -43,7 +43,6 @@ export default function UserActions({
   roundState,
   actions,
 }: UserActionsProps) {
-  const [ethAmount, setEthAmount] = useState("");
   const [isBuying, setIsBuying] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
   const [isRefunding, setIsRefunding] = useState(false);
@@ -80,15 +79,15 @@ export default function UserActions({
     roundState?.currentBlock! > roundState?.revealWindowExpiry!;
 
   const handleBuy = async () => {
-    const val = parseFloat(ethAmount || ticketPrice);
+    const val = parseFloat(ticketPrice);
     if (isNaN(val) || val <= 0) {
-      toast.error("Enter a valid ETH amount.");
+      toast.error("Ticket price is not available.");
       return;
     }
     setIsBuying(true);
     const id = toast.loading("Awaiting wallet confirmation…");
     try {
-      const { hash } = await actions.buyTicket(ethAmount || ticketPrice);
+      const { hash } = await actions.buyTicket(ticketPrice);
       toast.success(
         <span>
           Ticket purchased!
@@ -96,7 +95,6 @@ export default function UserActions({
         </span>,
         { id, duration: 10000 },
       );
-      setEthAmount("");
     } catch (err: unknown) {
       toast.error((err as Error).message, { id });
     } finally {
@@ -112,7 +110,7 @@ export default function UserActions({
       const { hash } = await actions.claimPrize(roundId);
       toast.success(
         <span>
-          🎉 Prize claimed!
+          Prize claimed!
           <TxLink hash={hash} />
         </span>,
         { id, duration: 12000 },
@@ -194,7 +192,6 @@ export default function UserActions({
       </div>
 
       <div className="space-y-4 p-6">
-        {/* Winner banner */}
         {isWinner && !roundState?.prizeClaimed && (
           <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/5 px-4 py-4">
             <div className="flex items-center gap-2 text-yellow-400">
@@ -211,7 +208,6 @@ export default function UserActions({
           </div>
         )}
 
-        {/* Slashed — refund available */}
         {isSlashed && (
           <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3.5 text-sm text-red-400">
             <p className="font-semibold">Round was slashed</p>
@@ -222,7 +218,6 @@ export default function UserActions({
           </div>
         )}
 
-        {/* ── Buy Ticket ──────────────────────────────────────────── */}
         <div className="rounded-xl border border-lborder bg-lcard p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -238,7 +233,7 @@ export default function UserActions({
             <span
               className={`text-[11px] font-medium ${isOpen ? "text-emerald-400" : "text-ldim"}`}
             >
-              {isOpen ? "● Sales open" : "● Sales closed"}
+              {isOpen ? "Sales open" : "Sales closed"}
             </span>
           </div>
           <div className="flex gap-2.5">
@@ -246,8 +241,11 @@ export default function UserActions({
               <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm text-ldim">
                 Ξ
               </div>
-              <div className="w-full rounded-lg border border-lborder bg-lsurface py-2.5 pl-8 pr-4 font-mono text-sm text-ltext placeholder-ldim outline-none transition-all focus:border-laccent/60 focus:ring-2 focus:ring-laccent/15 disabled:opacity-50">
+              <div className="w-full rounded-lg border border-lborder bg-lghost py-2.5 pl-8 pr-4 font-mono text-sm text-ltext select-none">
                 {ticketPrice}
+              </div>
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold uppercase tracking-wider text-ldim">
+                fixed
               </div>
             </div>
             <button
@@ -271,7 +269,6 @@ export default function UserActions({
           )}
         </div>
 
-        {/* ── Claim Prize ──────────────────────────────────────────── */}
         <div
           className={`rounded-xl border p-5 transition-all ${canClaim ? "border-yellow-500/25 bg-yellow-500/5" : "border-lborder bg-lcard opacity-60"}`}
         >
@@ -306,7 +303,6 @@ export default function UserActions({
           )}
         </div>
 
-        {/* ── Claim Refund (Slashed phase) ─────────────────────────── */}
         {(isSlashed || canRefund) && (
           <div
             className={`rounded-xl border p-5 transition-all ${canRefund ? "border-red-500/25 bg-red-500/5" : "border-lborder bg-lcard opacity-60"}`}
@@ -337,7 +333,6 @@ export default function UserActions({
           </div>
         )}
 
-        {/* ── Slash Owner ──────────────────────────────────────────── */}
         {canSlash && (
           <div className="rounded-xl border border-orange-500/25 bg-orange-500/5 p-5">
             <div className="mb-2 flex items-center gap-2">

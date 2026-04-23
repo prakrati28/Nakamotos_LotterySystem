@@ -1,16 +1,3 @@
-/**
- * useContract — client-side hook for the user-facing lottery app.
- *
- * READ strategy: fetches from /api/rounds/[roundId] (server reads the chain
- * via RPC, no wallet needed, works even when wallet is disconnected).
- *
- * WRITE strategy: only user-callable functions go through MetaMask here:
- *   buyTicket, claimPrize(roundId), claimRefund(roundId), slashOwner
- *
- * Owner-only writes (closeSale, commitHash, revealAndDraw, startNewRound)
- * live in useOwnerApi and are called server-side via /api/owner/* routes.
- */
-
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { ethers } from "ethers";
@@ -19,16 +6,14 @@ import { CONTRACT_ADDRESS } from "@/lib/constants";
 import { parseContractError } from "@/lib/utils";
 import type { WalletState } from "./useWallet";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
-
 export interface RoundState {
   roundId: number;
-  phase: string; // "Open" | "SaleClosed" | "Committed" | "Drawn" | "Slashed"
-  prizePool: string; // ETH string e.g. "1.25"
+  phase: string;
+  prizePool: string;
   prizePoolWei: string;
   totalTickets: number;
-  winner: string; // address or ZERO_ADDRESS
-  ticketPrice: string; // ETH string
+  winner: string;
+  ticketPrice: string;
   ticketPriceWei: string;
   targetBlock: number;
   currentBlock: number;
@@ -36,7 +21,6 @@ export interface RoundState {
   revealWindowExpiry: number;
   isRevealWindowOpen: boolean;
   prizeClaimed: boolean;
-  // User-specific (added client-side after fetch)
   userTickets: number;
 }
 
@@ -56,12 +40,8 @@ export interface UseContractReturn {
   slashOwner: () => Promise<TxResult>;
 }
 
-// ── Fetchers ──────────────────────────────────────────────────────────────────
-
-/** Fetch current round number directly from the chain (no wallet needed) */
 async function fetchCurrentRound(): Promise<number> {
   if (!CONTRACT_ADDRESS) throw new Error("Contract address not configured.");
-  // Use a public RPC provider for read-only — no wallet needed
   const provider = new ethers.JsonRpcProvider(
     process.env.NEXT_PUBLIC_RPC_URL ?? "",
   );
@@ -70,7 +50,6 @@ async function fetchCurrentRound(): Promise<number> {
   return Number(round);
 }
 
-/** Fetch round state from our Next.js API (server reads RPC with OWNER key) */
 async function fetchRoundState(
   roundId: number,
   userAddress: string | null,
@@ -82,7 +61,6 @@ async function fetchRoundState(
   }
   const data = (await res.json()) as RoundState;
 
-  // Augment with user-specific ticket count (needs browser provider)
   if (userAddress && window.ethereum) {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
@@ -103,17 +81,13 @@ async function fetchRoundState(
   return data;
 }
 
-// ── Hook ──────────────────────────────────────────────────────────────────────
-
 export function useContract(wallet: WalletState): UseContractReturn {
-  // Step 1: get current round number
   const { data: currentRound } = useSWR(
     CONTRACT_ADDRESS ? "currentRound" : null,
     fetchCurrentRound,
     { refreshInterval: 20_000 },
   );
 
-  // Step 2: get full round state for that round
   const roundKey =
     currentRound !== undefined
       ? ["roundState", currentRound, wallet.address]
@@ -129,8 +103,6 @@ export function useContract(wallet: WalletState): UseContractReturn {
     ([, id, addr]) => fetchRoundState(id as number, addr as string | null),
     { refreshInterval: 12_000, revalidateOnFocus: true },
   );
-
-  // ── Write helpers ────────────────────────────────────────────────────────
 
   const getWriteContract = useCallback(() => {
     if (!wallet.signer) throw new Error("Wallet not connected.");
@@ -153,8 +125,6 @@ export function useContract(wallet: WalletState): UseContractReturn {
     },
     [mutate],
   );
-
-  // ── User-callable write functions ────────────────────────────────────────
 
   const buyTicket = useCallback(
     (valueEth: string) =>

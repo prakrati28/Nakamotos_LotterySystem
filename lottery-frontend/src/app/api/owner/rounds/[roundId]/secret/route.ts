@@ -6,7 +6,6 @@ import { generateSecret, hashSecret } from "@/lib/server/crypto";
 
 type Ctx = { params: { roundId: string } };
 
-/** GET — retrieve the stored secret + hash for a round */
 export async function GET(req: NextRequest, { params }: Ctx) {
   const authError = requireOwnerAuth(req);
   if (authError) return authError;
@@ -29,7 +28,6 @@ export async function GET(req: NextRequest, { params }: Ctx) {
   });
 }
 
-/** POST — generate (or accept) a secret and store it */
 export async function POST(req: NextRequest, { params }: Ctx) {
   const authError = requireOwnerAuth(req);
   if (authError) return authError;
@@ -38,7 +36,6 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   if (isNaN(roundId))
     return NextResponse.json({ error: "Invalid roundId" }, { status: 400 });
 
-  // Optional: caller can provide their own secret
   const body = await req.json().catch(() => ({}));
   const secret = body?.secret as string | undefined;
 

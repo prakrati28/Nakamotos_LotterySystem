@@ -1,20 +1,7 @@
 "use client";
 
-/**
- * useOwnerApi — hook for the owner dashboard.
- *
- * All owner writes are executed SERVER-SIDE via the Next.js API routes.
- * The private key never touches the browser. The owner authenticates with
- * the OWNER_API_KEY (set in .env.local, typed in the dashboard UI).
- *
- * The owner's MetaMask wallet is NOT used for any on-chain writes — the
- * server wallet (OWNER_PRIVATE_KEY) sends all owner transactions.
- */
-
 import { useCallback, useState } from "react";
 import useSWR from "swr";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface DbRound {
   id: number;
@@ -44,19 +31,16 @@ export interface AuditLog {
 }
 
 export interface OwnerApiReturn {
-  // Auth
   apiKey: string;
   setApiKey: (k: string) => void;
   isAuthed: boolean;
 
-  // Round list
   rounds: DbRound[];
   currentRound: number | undefined;
   isLoadingRounds: boolean;
   roundsError: Error | undefined;
   refreshRounds: () => void;
 
-  // Actions — all return { message, txHash, ... }
   generateSecret: (roundId: number) => Promise<Record<string, unknown>>;
   closeSale: (roundId: number) => Promise<Record<string, unknown>>;
   commitHash: (
@@ -66,11 +50,8 @@ export interface OwnerApiReturn {
   revealAndDraw: (roundId: number) => Promise<Record<string, unknown>>;
   startNewRound: () => Promise<Record<string, unknown>>;
 
-  // Loading states per action
   pending: Record<string, boolean>;
 }
-
-// ── Helper ────────────────────────────────────────────────────────────────────
 
 async function ownerFetch(
   path: string,
@@ -92,8 +73,6 @@ async function ownerFetch(
   return data;
 }
 
-// ── Hook ──────────────────────────────────────────────────────────────────────
-
 export function useOwnerApi(): OwnerApiReturn {
   const [apiKey, setApiKey] = useState<string>(() =>
     typeof window !== "undefined"
@@ -102,7 +81,6 @@ export function useOwnerApi(): OwnerApiReturn {
   );
   const [pending, setPending] = useState<Record<string, boolean>>({});
 
-  // Persist key in localStorage (only the owner uses this page)
   const handleSetApiKey = useCallback((k: string) => {
     setApiKey(k);
     if (typeof window !== "undefined") {
@@ -112,7 +90,6 @@ export function useOwnerApi(): OwnerApiReturn {
 
   const isAuthed = apiKey.length > 0;
 
-  // Fetch all rounds from DB + current on-chain round
   const { data, error, isLoading, mutate } = useSWR(
     isAuthed ? ["ownerRounds", apiKey] : null,
     async ([, key]) => {
@@ -121,8 +98,6 @@ export function useOwnerApi(): OwnerApiReturn {
     },
     { refreshInterval: 15_000, revalidateOnFocus: true },
   );
-
-  // ── Action factory ───────────────────────────────────────────────────────
 
   function makeAction(key: string, fn: () => Promise<Record<string, unknown>>) {
     return async () => {

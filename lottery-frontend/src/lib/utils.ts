@@ -37,7 +37,6 @@ export function parseContractError(err: unknown): string {
   return "Transaction failed.";
 }
 
-/** Format a block countdown nicely */
 export function formatBlockCountdown(blocks: number): string {
   if (blocks <= 0) return "Now";
   // ~12s per block on mainnet / Sepolia
