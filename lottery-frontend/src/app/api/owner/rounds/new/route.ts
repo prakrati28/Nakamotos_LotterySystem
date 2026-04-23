@@ -10,12 +10,13 @@ export async function POST(req: NextRequest) {
   try {
     const contract = getServerContract();
     const currentRound = Number(await contract.currentRound());
-    const currentPhase = await getOnChainPhase(currentRound);
 
-    if (!["Drawn", "Slashed"].includes(currentPhase)) {
+    const onChainPhase = await getOnChainPhase(currentRound);
+
+    if (!["Drawn", "Slashed"].includes(onChainPhase)) {
       return NextResponse.json(
         {
-          error: `Round ${currentRound} must be Drawn or Slashed before starting a new round (currently ${currentPhase}).`,
+          error: `Round ${currentRound} must be Drawn or Slashed on-chain before starting a new round (on-chain phase: ${onChainPhase}).`,
         },
         { status: 400 },
       );
@@ -24,6 +25,11 @@ export async function POST(req: NextRequest) {
     const tx = await contract.startNewRound();
     const receipt = await tx.wait();
     const newId = currentRound + 1;
+
+    await prisma.round.updateMany({
+      where: { id: currentRound },
+      data: { phase: onChainPhase as never },
+    });
 
     await prisma.round.upsert({
       where: { id: newId },

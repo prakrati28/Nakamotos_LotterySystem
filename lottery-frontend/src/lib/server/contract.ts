@@ -1,11 +1,6 @@
-/**
- * Server-side only — never imported by client components.
- * Provides a singleton ethers contract instance using the owner private key.
- */
 import { ethers } from "ethers";
 import { LOTTERY_ABI, PHASE_MAP } from "@/abi/lottery";
 
-// Lazy singletons — instantiated once per server process
 let _provider: ethers.JsonRpcProvider | null = null;
 let _signer: ethers.Wallet | null = null;
 let _contract: ethers.Contract | null = null;
@@ -38,7 +33,6 @@ export function getServerContract(): ethers.Contract {
   return _contract;
 }
 
-/** Fetch the human-readable phase for a given roundId from the chain */
 export async function getOnChainPhase(roundId: number): Promise<string> {
   const contract = getServerContract();
   const phaseNum = await contract.phase(BigInt(roundId));
