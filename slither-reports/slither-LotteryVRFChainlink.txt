@@ -1,0 +1,142 @@
+'forge clean' running (wd: C:\CS218\Nakamotos_LotterySystem)
+'forge config --json' running
+'forge build --build-info vrf\LotteryVRFChainlink.sol' running (wd: C:\CS218\Nakamotos_LotterySystem)
+INFO:Detectors:
+Detector: reentrancy-no-eth
+Reentrancy in Lottery.requestDraw() (vrf/LotteryVRFChainlink.sol#131-155):
+        External calls:
+        - requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({keyHash:s_keyHash,subId:s_subscriptionId,requestConfirmations:REQUEST_CONFIRMATIONS,callbackGasLimit:CALLBACK_GAS_LIMIT,numWords:NUM_WORDS,extraArgs:VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment:false}))})) (vrf/LotteryVRFChainlink.sol#137-149)
+        State variables written after the call(s):
+        - phase[currentRound] = Phase.Committed (vrf/LotteryVRFChainlink.sol#150-153)
+        Lottery.phase (vrf/LotteryVRFChainlink.sol#46) can be used in cross function reentrancies:
+        - Lottery.buyTicket() (vrf/LotteryVRFChainlink.sol#101-115)
+        - Lottery.closeSale() (vrf/LotteryVRFChainlink.sol#115-122)
+        - Lottery.constructor(uint256,address,uint256,bytes32) (vrf/LotteryVRFChainlink.sol#73-89)
+        - Lottery.fulfillRandomWords(uint256,uint256[]) (vrf/LotteryVRFChainlink.sol#163-177)
+        - Lottery.phase (vrf/LotteryVRFChainlink.sol#46)
+        - Lottery.requestDraw() (vrf/LotteryVRFChainlink.sol#131-155)
+        - Lottery.slashOwner() (vrf/LotteryVRFChainlink.sol#177-187)
+        - Lottery.startNewRound() (vrf/LotteryVRFChainlink.sol#89-101)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-2
+INFO:Detectors:
+Detector: reentrancy-benign
+Reentrancy in Lottery.requestDraw() (vrf/LotteryVRFChainlink.sol#131-155):
+        External calls:
+        - requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({keyHash:s_keyHash,subId:s_subscriptionId,requestConfirmations:REQUEST_CONFIRMATIONS,callbackGasLimit:CALLBACK_GAS_LIMIT,numWords:NUM_WORDS,extraArgs:VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment:false}))})) (vrf/LotteryVRFChainlink.sol#137-149)
+        State variables written after the call(s):
+        - roundVrfRequest[currentRound] = requestId (vrf/LotteryVRFChainlink.sol#149-150)
+        - vrfRequestToRound[requestId] = currentRound (vrf/LotteryVRFChainlink.sol#149)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-3
+INFO:Detectors:
+Detector: reentrancy-events
+Reentrancy in Lottery.requestDraw() (vrf/LotteryVRFChainlink.sol#131-155):
+        External calls:
+        - requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({keyHash:s_keyHash,subId:s_subscriptionId,requestConfirmations:REQUEST_CONFIRMATIONS,callbackGasLimit:CALLBACK_GAS_LIMIT,numWords:NUM_WORDS,extraArgs:VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment:false}))})) (vrf/LotteryVRFChainlink.sol#137-149)
+        Event emitted after the call(s):
+        - HashCommitted(currentRound,bytes32(requestId)) (vrf/LotteryVRFChainlink.sol#154-155)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-4
+INFO:Detectors:
+Detector: assembly
+StorageSlot.getAddressSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#64-67) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#66-67)
+StorageSlot.getBooleanSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#73-76) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#75)
+StorageSlot.getBytes32Slot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#82-84) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#84)
+StorageSlot.getUint256Slot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#90-93) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#93)
+StorageSlot.getInt256Slot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#97-102) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#101-102)
+StorageSlot.getStringSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#105-111) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#109-111)
+StorageSlot.getStringSlot(string) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#115-120) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#118-120)
+StorageSlot.getBytesSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#122-129) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#127-129)
+StorageSlot.getBytesSlot(bytes) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#131-138) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#136-138)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+Detector: pragma
+3 different versions of Solidity are used:
+        - Version constraint ^0.8.0 is used by:
+                -^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/access/ConfirmedOwner.sol#1-2)
+                -^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/access/ConfirmedOwnerWithProposal.sol#1-2)
+                -^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/IOwnable.sol#1-2)
+                -^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol#1-2)
+                -^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol#1-2)
+                -^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFSubscriptionV2Plus.sol#1-2)
+        - Version constraint ^0.8.4 is used by:
+                -^0.8.4 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol#1-2)
+                -^0.8.4 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol#1-2)
+        - Version constraint ^0.8.20 is used by:
+                -^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol#2-4)
+                -^0.8.20 (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#3-5)
+                -^0.8.20 (vrf/LotteryVRFChainlink.sol#1-2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Detector: solc-version
+Version constraint ^0.8.0 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess
+        - AbiReencodingHeadOverflowWithStaticArrayCleanup
+        - DirtyBytesArrayToStorage
+        - DataLocationChangeInInternalOverride
+        - NestedCalldataArrayAbiReencodingSizeValidation
+        - SignedImmutables
+        - ABIDecodeTwoDimensionalArrayMemory
+        - KeccakCaching.
+It is used by:
+        - ^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/access/ConfirmedOwner.sol#1-2)
+        - ^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/access/ConfirmedOwnerWithProposal.sol#1-2)
+        - ^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/IOwnable.sol#1-2)
+        - ^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFCoordinatorV2Plus.sol#1-2)
+        - ^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol#1-2)
+        - ^0.8.0 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFSubscriptionV2Plus.sol#1-2)
+Version constraint ^0.8.4 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess
+        - AbiReencodingHeadOverflowWithStaticArrayCleanup
+        - DirtyBytesArrayToStorage
+        - DataLocationChangeInInternalOverride
+        - NestedCalldataArrayAbiReencodingSizeValidation
+        - SignedImmutables.
+It is used by:
+        - ^0.8.4 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol#1-2)
+        - ^0.8.4 (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol#1-2)
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - VerbatimInvalidDeduplication
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess.
+It is used by:
+        - ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol#2-4)
+        - ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#3-5)
+        - ^0.8.20 (vrf/LotteryVRFChainlink.sol#1-2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Detector: low-level-calls
+Low level call in Lottery.claimPrize(uint256) (vrf/LotteryVRFChainlink.sol#187-202):
+        - (success,None) = msg.sender.call{value: payout}() (vrf/LotteryVRFChainlink.sol#198)
+Low level call in Lottery.claimRefund(uint256) (vrf/LotteryVRFChainlink.sol#202-218):
+        - (success,None) = msg.sender.call{value: refundAmount}() (vrf/LotteryVRFChainlink.sol#214)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Detector: naming-convention
+Parameter VRFConsumerBaseV2Plus.setCoordinator(address)._vrfCoordinator (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol#143-144) is not in mixedCase
+Variable VRFConsumerBaseV2Plus.s_vrfCoordinator (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol#106-107) is not in mixedCase
+Parameter Lottery.claimPrize(uint256)._roundId (vrf/LotteryVRFChainlink.sol#187) is not in mixedCase
+Parameter Lottery.claimRefund(uint256)._roundId (vrf/LotteryVRFChainlink.sol#204) is not in mixedCase
+Parameter Lottery.totalTickets(uint256)._roundId (vrf/LotteryVRFChainlink.sol#220) is not in mixedCase
+Parameter Lottery.getParticipant(uint256,uint256)._roundId (vrf/LotteryVRFChainlink.sol#223) is not in mixedCase
+Variable Lottery.s_subscriptionId (vrf/LotteryVRFChainlink.sol#28-31) is not in mixedCase
+Variable Lottery.s_keyHash (vrf/LotteryVRFChainlink.sol#31-32) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+Detector: unindexed-event-address
+Event IVRFMigratableConsumerV2Plus.CoordinatorSet(address) (lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/interfaces/IVRFMigratableConsumerV2Plus.sol#7-8) has address parameters but no indexed parameters
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#unindexed-event-address-parameters
+INFO:Detectors:
+Detector: immutable-states
+Lottery.ticketPrice (vrf/LotteryVRFChainlink.sol#41) should be immutable 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-immutable
+INFO:Slither:vrf/LotteryVRFChainlink.sol analyzed (11 contracts with 101 detectors), 28 result(s) found

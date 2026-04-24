@@ -48,7 +48,7 @@ contract Lottery is Ownable, ReentrancyGuard {
     uint256 public ticketPrice;
     uint256 public currentRound;
 
-    // A single mapping replaces the 8 separate mappings from before
+    
     mapping(uint256 => Round) private rounds;
     
 
@@ -118,6 +118,7 @@ contract Lottery is Ownable, ReentrancyGuard {
       commit reveal to prevent frontrunning
       @param  hash:  keccak256(abi.encodePacked(secret)) — computed off-chain.
      */
+
     function commitHash(bytes32 _hash) external payable onlyOwner {
         Round storage round = rounds[currentRound];
         require(round.phase == Phase.SaleClosed, "Lottery: must close sale first");            // lottery sale should be closed
@@ -135,7 +136,7 @@ contract Lottery is Ownable, ReentrancyGuard {
     }
 
       //@param  _secret  The raw secret value committed to via commitHash().  Passes through calldata only; never written to storage.
-      //  Owner reveals the secret, verifies it against the committed. Hash, draws the winner deterministically.
+     //  Owner reveals the secret, verifies it against the committed. Hash, draws the winner deterministically.
     function revealAndDraw(bytes32 _secret) external onlyOwner {
         Round storage round = rounds[currentRound];
         require(round.phase == Phase.Committed, "Lottery: not in committed phase");                // phase must be in commit
@@ -253,9 +254,8 @@ contract Lottery is Ownable, ReentrancyGuard {
         return rounds[_roundId].participants[index];
     }
     
-    // =============================================================
-    // GETTERS (To replicate original public mapping interface)
-    // =============================================================
+
+    // GETTERS 
     function phase(uint256 _roundId) external view returns (Phase) { return rounds[_roundId].phase; }
     function committedHash(uint256 _roundId) external view returns (bytes32) { return rounds[_roundId].committedHash; }
     function winner(uint256 _roundId) external view returns (address) { return rounds[_roundId].winner; }
