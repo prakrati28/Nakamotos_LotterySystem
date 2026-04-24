@@ -170,8 +170,8 @@ export default function UserActions({
 
   return (
     <section className="animate-slide-up-d1 rounded-2xl border border-lborder bg-lsurface shadow-lpanel">
-      <div className="flex items-center gap-3 border-b border-lborder px-6 py-4">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/12 ring-1 ring-emerald-500/20">
+      <div className="flex items-center gap-3 border-b border-lborder px-3 md:px-6 py-4">
+        <div className="md:flex h-9 w-9 items-center hidden justify-center rounded-xl bg-emerald-500/12 ring-1 ring-emerald-500/20">
           <Ticket className="h-4.5 w-4.5 text-emerald-400" />
         </div>
         <div>
@@ -183,17 +183,17 @@ export default function UserActions({
           </p>
         </div>
         {hasTicket && roundState && (
-          <span className="ml-auto rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/25">
+          <span className="ml-auto text-nowrap rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-500/25">
             {roundState.userTickets} ticket
             {roundState.userTickets !== 1 ? "s" : ""} held
           </span>
         )}
       </div>
 
-      <div className="space-y-4 p-6">
+      <div className="space-y-4 p-2 md:p-6">
         {/* Winner banner */}
         {isWinner && !roundState?.prizeClaimed && (
-          <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/8 px-4 py-4">
+          <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/8 p-2 md:p-4">
             <div className="flex items-center gap-2 text-yellow-300">
               <Trophy className="h-4 w-4" />
               <span className="font-semibold text-base">
@@ -212,7 +212,7 @@ export default function UserActions({
 
         {/* Slashed notice */}
         {isSlashed && (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/6 px-4 py-4">
+          <div className="rounded-xl border border-red-500/20 bg-red-500/6 p-2 md:p-4">
             <p className="font-semibold text-red-300">Round was slashed</p>
             <p className="mt-1 text-sm text-red-400/75">
               The owner missed the reveal window. If you hold tickets, you can
@@ -222,7 +222,7 @@ export default function UserActions({
         )}
 
         {/* Buy Ticket */}
-        <div className="rounded-xl border border-lborder bg-lcard p-5">
+        <div className="rounded-xl border border-lborder bg-lcard p-2.5 md:p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="text-base font-semibold text-ltext">
@@ -237,25 +237,25 @@ export default function UserActions({
             <span
               className={`text-xs font-semibold ${isOpen ? "text-emerald-400" : "text-ldim"}`}
             >
-              {isOpen ? "● Sales open" : "● Sales closed"}
+              {isOpen ? "Sales open" : "Sales closed"}
             </span>
           </div>
           <div className="flex gap-3">
-            <div className="relative flex-1">
-              <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm text-ldim">
+            <div className="relative flex gap-2 px-2 items-center rounded-xl border border-lborder bg-lghost">
+              <div className="pointer-events-none font-mono text-sm text-ldim">
                 Ξ
               </div>
-              <div className="flex w-full items-center rounded-xl border border-lborder bg-lghost py-3 pl-8 pr-14 font-mono text-sm text-ltext select-none">
+              <div className="flex w-full font-mono text-sm text-ltext select-none">
                 {ticketPrice}
               </div>
-              <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase tracking-wider text-ldim">
+              <div className="pointer-events-none text-[10px] font-bold uppercase tracking-wider text-ldim">
                 fixed
               </div>
             </div>
             <button
               onClick={handleBuy}
               disabled={!canBuy || isBuying}
-              className="flex min-w-[130px] items-center justify-center gap-2 rounded-xl bg-laccent px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-laccenthi active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center justify-center gap-2 rounded-xl bg-laccent px-2.5 md:px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-laccenthi active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isBuying ? (
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -275,7 +275,7 @@ export default function UserActions({
 
         {/* Claim Prize */}
         <div
-          className={`rounded-xl border p-5 transition-all ${canClaim ? "border-yellow-500/30 bg-yellow-500/6" : "border-lborder bg-lcard opacity-60"}`}
+          className={`rounded-xl border p-2.5 md:p-5 transition-all ${canClaim ? "border-yellow-500/30 bg-yellow-500/6" : "border-lborder bg-lcard opacity-60"}`}
         >
           <div className="mb-4 flex items-center justify-between">
             <span className="text-base font-semibold text-ltext">
@@ -311,7 +311,7 @@ export default function UserActions({
         {/* Claim Refund */}
         {(isSlashed || canRefund) && (
           <div
-            className={`rounded-xl border p-5 transition-all ${canRefund ? "border-red-500/25 bg-red-500/6" : "border-lborder bg-lcard opacity-60"}`}
+            className={`rounded-xl border p-2.5 md:p-5 transition-all ${canRefund ? "border-red-500/25 bg-red-500/6" : "border-lborder bg-lcard opacity-60"}`}
           >
             <div className="mb-4 flex items-center justify-between">
               <span className="text-base font-semibold text-ltext">
@@ -341,7 +341,7 @@ export default function UserActions({
 
         {/* Slash Owner */}
         {canSlash && (
-          <div className="rounded-xl border border-orange-500/25 bg-orange-500/6 p-5">
+          <div className="rounded-xl border border-orange-500/25 bg-orange-500/6 p-2.5 md:p-5">
             <div className="mb-2.5 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-orange-400" />
               <span className="text-base font-semibold text-orange-300">

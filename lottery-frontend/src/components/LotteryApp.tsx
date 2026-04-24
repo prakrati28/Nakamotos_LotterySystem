@@ -28,11 +28,11 @@ export default function LotteryApp() {
     <div className="flex min-h-screen flex-col">
       <Header wallet={wallet} />
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-3 md:px-6 py-10">
         {!CONTRACT_ADDRESS && <ContractAddressWarning />}
 
         {error && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/25 bg-red-500/8 px-5 py-4 animate-fade-in">
+          <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/25 bg-red-500/8 px-3 md:px-5 py-4 animate-fade-in">
             <span className="mt-0.5 shrink-0 text-red-400 text-lg">⚠</span>
             <div>
               <p className="font-semibold text-red-300 text-base">
@@ -45,7 +45,7 @@ export default function LotteryApp() {
 
         {/* Hero */}
         <div className="mb-12 animate-fade-in">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-lborder bg-lcard px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-lsubtle">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-lborder bg-lcard px-2 md:px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-lsubtle">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             Ethereum · Commit-Reveal Protocol
           </div>
@@ -62,8 +62,8 @@ export default function LotteryApp() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
+        <div className="grid grid-cols-1 gap-3 md:gap-6 lg:grid-cols-3">
+          <div className="space-y-3 md:space-y-6 lg:col-span-2">
             <LotteryStatus
               roundState={roundState}
               currentRound={currentRound}
@@ -87,7 +87,7 @@ export default function LotteryApp() {
       </main>
 
       <footer className="mt-16 border-t border-lborder">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 md:px-6 py-5">
           <div className="flex items-center gap-2.5">
             <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5">
               <path

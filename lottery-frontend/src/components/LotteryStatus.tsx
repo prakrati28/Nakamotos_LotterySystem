@@ -43,7 +43,7 @@ function StatCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border p-5 transition-all ${
+      className={`relative overflow-hidden rounded-xl border p-2.5 sm:p-5 transition-all ${
         accent
           ? "border-laccent/25 bg-l-gradient-card bg-lcard shadow-lglow"
           : "border-lborder bg-lcard"
@@ -89,8 +89,8 @@ export default function LotteryStatus({
   return (
     <section className="animate-slide-up rounded-2xl border border-lborder bg-lsurface shadow-lpanel">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-lborder px-6 py-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col md:flex-row gap-2 items-center justify-between border-b border-lborder px-3 md:px-6 py-4">
+        <div className="flex items-center gap-3 self-start">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
             <Layers className="h-4.5 w-4.5 text-laccent" />
           </div>
@@ -104,7 +104,7 @@ export default function LotteryStatus({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-end">
           {phaseStyle && phaseLabel && (
             <span
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${phaseStyle.badge}`}
@@ -125,9 +125,9 @@ export default function LotteryStatus({
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-3 md:p-6">
         {isLoading && !roundState ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-28" />
             ))}
@@ -136,7 +136,7 @@ export default function LotteryStatus({
           <>
             {/* Slashed warning */}
             {isSlashed && (
-              <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/8 px-4 py-4 text-red-400">
+              <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/8 px-2 md:px-4 py-4 text-red-400">
                 <span className="text-xl">⚠</span>
                 <div>
                   <p className="font-semibold text-base">Owner Slashed</p>
@@ -152,7 +152,7 @@ export default function LotteryStatus({
             {/* Reveal countdown */}
             {showCountdown && (
               <div
-                className={`mb-5 flex items-center gap-3 rounded-xl border px-4 py-3.5 ${
+                className={`mb-5 flex items-center gap-3 rounded-xl border px-2 md:px-4 py-3.5 ${
                   windowExpired
                     ? "border-red-500/30 bg-red-500/8 text-red-400"
                     : canReveal
@@ -185,7 +185,7 @@ export default function LotteryStatus({
             )}
 
             {/* Stats grid */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 md:gap-4 md:grid-cols-4">
               <StatCard
                 icon={<Layers className="h-4.5 w-4.5" />}
                 label="Phase"
@@ -238,7 +238,7 @@ export default function LotteryStatus({
             </div>
 
             {/* Phase progress stepper */}
-            <div className="mt-6 rounded-xl border border-lborder bg-lcard p-5">
+            <div className="mt-6 rounded-xl border border-lborder bg-lcard p-2.5 md:p-5">
               <div className="mb-4 flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-widest text-ldim">
                   Round Progress

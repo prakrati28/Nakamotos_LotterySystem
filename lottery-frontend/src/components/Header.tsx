@@ -53,7 +53,7 @@ function WalletDropdown({
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-full z-50 mt-2 w-68 animate-fade-in overflow-hidden rounded-xl border border-lborder bg-lcard shadow-lpanel"
+      className="absolute right-0 top-full z-50 mt-2 w-full animate-fade-in overflow-hidden rounded-xl border border-lborder bg-lcard shadow-lpanel"
     >
       <div className="border-b border-lborder bg-lsurface px-4 py-3.5">
         <p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-ldim">
@@ -96,7 +96,7 @@ function WalletDropdown({
             await switchAccount();
           }}
           disabled={isSwitchingAccount}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-lsubtle transition-colors hover:bg-lghost hover:text-ltext disabled:opacity-50"
+          className="flex w-full items-center gap-3 text-start rounded-lg px-3 py-2.5 text-sm text-lsubtle transition-colors hover:bg-lghost hover:text-ltext disabled:opacity-50"
         >
           {isSwitchingAccount ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-ldim/30 border-t-lsubtle" />
@@ -136,9 +136,9 @@ export default function Header({ wallet }: HeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-lborder/60 bg-lbg/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex flex-col md:flex-row gap-2 max-w-7xl items-center justify-between px-6 py-4 md:py-2">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 self-start">
             <div className="relative flex h-9 w-9 items-center justify-center">
               <svg viewBox="0 0 32 32" fill="none" className="h-9 w-9">
                 <path
@@ -165,7 +165,7 @@ export default function Header({ wallet }: HeaderProps) {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 self-end">
             {isConnected && (
               <button
                 onClick={!isCorrectNetwork ? switchNetwork : undefined}

@@ -42,7 +42,7 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
     <aside className="space-y-4">
       {/* How It Works */}
       <div className="animate-slide-up-d1 rounded-2xl border border-lborder bg-lsurface shadow-lcard">
-        <div className="flex items-center gap-3 border-b border-lborder px-5 py-4">
+        <div className="flex items-center gap-3 border-b border-lborder px-2.5 md:px-5 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
             <BookOpen className="h-4 w-4 text-laccent" />
           </div>
@@ -52,7 +52,7 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
         </div>
         <ol className="divide-y divide-lborder">
           {steps.map(({ n, title, desc }) => (
-            <li key={n} className="flex gap-4 px-5 py-4">
+            <li key={n} className="flex gap-4 px-2.5 md:px-5 py-4">
               <span className="mt-0.5 shrink-0 font-mono text-xs font-bold text-laccent/60">
                 {n}
               </span>
@@ -67,7 +67,7 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
 
       {/* Contract Info */}
       <div className="animate-slide-up-d2 rounded-2xl border border-lborder bg-lsurface shadow-lcard">
-        <div className="flex items-center gap-3 border-b border-lborder px-5 py-4">
+        <div className="flex items-center gap-3 border-b border-lborder px-2.5 md:px-5 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
             <FileCode className="h-4 w-4 text-laccent" />
           </div>
@@ -75,7 +75,7 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
             Contract
           </h3>
         </div>
-        <div className="space-y-3.5 p-5">
+        <div className="space-y-3.5 p-2.5 md:p-5">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-ldim">
               Network
@@ -128,7 +128,7 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
       </div>
 
       {/* Security note */}
-      <div className="animate-slide-up-d3 rounded-xl border border-lborder bg-lcard px-5 py-4">
+      <div className="animate-slide-up-d3 rounded-xl border border-lborder bg-lcard px-2.5 md:px-5 py-2 md:py-4">
         <p className="text-sm leading-relaxed text-ldim">
           <span className="font-semibold text-lsubtle">Commit-reveal</span>{" "}
           prevents the owner from choosing a winner after seeing all
