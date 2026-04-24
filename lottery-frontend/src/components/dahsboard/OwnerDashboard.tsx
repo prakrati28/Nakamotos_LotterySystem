@@ -17,8 +17,8 @@ export default function OwnerDashboard() {
   return (
     <div className="flex min-h-screen flex-col bg-lbg">
       <header className="sticky top-0 z-50 border-b border-lborder/60 bg-lbg/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex flex-col md:flex-row gap-2 max-w-7xl items-center justify-between px-3 py-3 md:px-6">
+          <div className="flex items-center self-start gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
               <LayoutDashboard className="h-4.5 w-4.5 text-laccent" />
             </div>
@@ -31,7 +31,7 @@ export default function OwnerDashboard() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 self-end">
             <button
               onClick={api.refreshRounds}
               disabled={api.isLoadingRounds}
@@ -62,14 +62,14 @@ export default function OwnerDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-3 md:px-6 py-10">
         {api.roundsError && (
           <div className="mb-6 rounded-xl border border-red-500/25 bg-red-500/8 px-5 py-4 text-sm text-red-400">
             <strong>Error:</strong> {api.roundsError.message}
           </div>
         )}
 
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="font-display text-3xl font-bold tracking-tight text-ltext">
               Round Management

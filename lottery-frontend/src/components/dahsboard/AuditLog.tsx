@@ -33,13 +33,13 @@ export default function AuditLog({ logs }: { logs: AuditLogEntry[] }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-lborder bg-lcard">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ldim">
+              <th className="px-2 md:px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ldim">
                 Action
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ldim">
+              <th className="px-2 md:px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ldim">
                 Timestamp
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ldim">
+              <th className="px-2 md:px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ldim">
                 Tx Hash
               </th>
             </tr>
@@ -50,17 +50,17 @@ export default function AuditLog({ logs }: { logs: AuditLogEntry[] }) {
                 key={log.id}
                 className="bg-lsurface transition-colors hover:bg-lcard"
               >
-                <td className="px-4 py-3">
+                <td className="px-2 md:px-4 py-3">
                   <span
                     className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-semibold ${ACTION_STYLES[log.action] ?? "bg-lghost text-lsubtle"}`}
                   >
                     {ACTION_LABELS[log.action] ?? log.action}
                   </span>
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-ldim">
+                <td className="px-2 md:px-4 py-3 font-mono text-xs text-ldim">
                   {new Date(log.createdAt).toLocaleString()}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-2 md:px-4 py-3">
                   {log.txHash ? (
                     <a
                       href={etherscanTx(log.txHash)}

@@ -77,13 +77,13 @@ export default function ApiKeyGate({
             Access Dashboard
           </button>
 
-          <p className="mt-4 text-center text-[11px] text-ldim">
+          {/* <p className="mt-4 text-center text-[11px] text-ldim">
             The key is stored in localStorage and sent as{" "}
             <code className="rounded bg-lghost px-1 font-mono text-[10px]">
               x-owner-key
             </code>{" "}
             header on all API requests.
-          </p>
+          </p> */}
         </form>
       </div>
     </div>
