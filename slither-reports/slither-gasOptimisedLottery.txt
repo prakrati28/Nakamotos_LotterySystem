@@ -1,0 +1,81 @@
+'forge clean' running (wd: C:\CS218\Nakamotos_LotterySystem)
+'forge config --json' running
+'forge build --build-info src\gasOptimisedLottery.sol' running (wd: C:\CS218\Nakamotos_LotterySystem)
+INFO:Detectors:
+Detector: weak-prng
+Lottery.revealAndDraw(bytes32) (src/gasOptimisedLottery.sol#137-185) uses a weak PRNG: "winnerIndex = uint256(keccak256(bytes)(abi.encodePacked(_secret,futureBlockHash,totalParticipants))) % totalParticipants (src/gasOptimisedLottery.sol#157-164)" 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#weak-PRNG
+INFO:Detectors:
+Detector: reentrancy-events
+Reentrancy in Lottery.revealAndDraw(bytes32) (src/gasOptimisedLottery.sol#137-185):
+        External calls:
+        - (success,None) = msg.sender.call{value: collateralToReturn}() (src/gasOptimisedLottery.sol#179-181)
+        Event emitted after the call(s):
+        - WinnerDrawn(currentRound,_winner,_prizePool) (src/gasOptimisedLottery.sol#184-185)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#reentrancy-vulnerabilities-4
+INFO:Detectors:
+Detector: assembly
+StorageSlot.getAddressSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#64-67) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#66-67)
+StorageSlot.getBooleanSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#73-76) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#75)
+StorageSlot.getBytes32Slot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#82-84) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#84)
+StorageSlot.getUint256Slot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#90-93) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#93)
+StorageSlot.getInt256Slot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#97-102) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#101-102)
+StorageSlot.getStringSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#105-111) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#109-111)
+StorageSlot.getStringSlot(string) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#115-120) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#118-120)
+StorageSlot.getBytesSlot(bytes32) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#122-129) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#127-129)
+StorageSlot.getBytesSlot(bytes) (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#131-138) uses assembly
+        - INLINE ASM (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#136-138)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+Detector: solc-version
+Version constraint ^0.8.20 contains known severe issues (https://solidity.readthedocs.io/en/latest/bugs.html)
+        - VerbatimInvalidDeduplication
+        - FullInlinerNonExpressionSplitArgumentEvaluationOrder
+        - MissingSideEffectsOnSelectorAccess.
+It is used by:
+        - ^0.8.20 (lib/openzeppelin-contracts/contracts/access/Ownable.sol#2-4)
+        - ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Context.sol#2-4)
+        - ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol#2-4)
+        - ^0.8.20 (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#3-5)
+        - ^0.8.20 (src/gasOptimisedLottery.sol#1-2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#incorrect-versions-of-solidity
+INFO:Detectors:
+Detector: low-level-calls
+Low level call in Lottery.revealAndDraw(bytes32) (src/gasOptimisedLottery.sol#137-185):
+        - (success,None) = msg.sender.call{value: collateralToReturn}() (src/gasOptimisedLottery.sol#179-181)
+Low level call in Lottery.claimPrize(uint256) (src/gasOptimisedLottery.sol#201-217):
+        - (success,None) = msg.sender.call{value: payout}() (src/gasOptimisedLottery.sol#212-213)
+Low level call in Lottery.claimRefund(uint256) (src/gasOptimisedLottery.sol#217-235):
+        - (success,None) = msg.sender.call{value: refundAmount}() (src/gasOptimisedLottery.sol#233-234)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#low-level-calls
+INFO:Detectors:
+Detector: naming-convention
+Parameter Lottery.commitHash(bytes32)._hash (src/gasOptimisedLottery.sol#118-119) is not in mixedCase
+Parameter Lottery.revealAndDraw(bytes32)._secret (src/gasOptimisedLottery.sol#138) is not in mixedCase
+Parameter Lottery.claimPrize(uint256)._roundId (src/gasOptimisedLottery.sol#201) is not in mixedCase
+Parameter Lottery.claimRefund(uint256)._roundId (src/gasOptimisedLottery.sol#217-218) is not in mixedCase
+Parameter Lottery.totalTickets(uint256)._roundId (src/gasOptimisedLottery.sol#238) is not in mixedCase
+Parameter Lottery.getParticipant(uint256,uint256)._roundId (src/gasOptimisedLottery.sol#246) is not in mixedCase
+Parameter Lottery.phase(uint256)._roundId (src/gasOptimisedLottery.sol#253) is not in mixedCase
+Parameter Lottery.committedHash(uint256)._roundId (src/gasOptimisedLottery.sol#257) is not in mixedCase
+Parameter Lottery.winner(uint256)._roundId (src/gasOptimisedLottery.sol#258-259) is not in mixedCase
+Parameter Lottery.prizePool(uint256)._roundId (src/gasOptimisedLottery.sol#259-260) is not in mixedCase
+Parameter Lottery.targetBlock(uint256)._roundId (src/gasOptimisedLottery.sol#260) is not in mixedCase
+Parameter Lottery.lockedCollateral(uint256)._roundId (src/gasOptimisedLottery.sol#261-262) is not in mixedCase
+Parameter Lottery.prizeClaimed(uint256)._roundId (src/gasOptimisedLottery.sol#263) is not in mixedCase
+Parameter Lottery.userTickets(uint256,address)._roundId (src/gasOptimisedLottery.sol#264) is not in mixedCase
+Parameter Lottery.userTickets(uint256,address)._user (src/gasOptimisedLottery.sol#264) is not in mixedCase
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#conformance-to-solidity-naming-conventions
+INFO:Detectors:
+Detector: immutable-states
+Lottery.ticketPrice (src/gasOptimisedLottery.sol#45) should be immutable 
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#state-variables-that-could-be-declared-immutable
+INFO:Slither:src/gasOptimisedLottery.sol analyzed (5 contracts with 101 detectors), 31 result(s) found
