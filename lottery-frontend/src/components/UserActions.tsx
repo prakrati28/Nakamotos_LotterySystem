@@ -46,7 +46,6 @@ export default function UserActions({
   const [isClaiming, setIsClaiming] = useState(false);
   const [isRefunding, setIsRefunding] = useState(false);
   const [isSlashing, setIsSlashing] = useState(false);
-
   const phase = roundState?.phase;
   const roundId = roundState?.roundId;
   const isOpen = phase === "Open";
@@ -87,6 +86,7 @@ export default function UserActions({
     const id = toast.loading("Awaiting wallet confirmation…");
     try {
       const { hash } = await actions.buyTicket(ticketPrice);
+
       toast.success(
         <span>
           Ticket purchased!
@@ -179,7 +179,7 @@ export default function UserActions({
             Participate
           </h2>
           <p className="text-xs text-ldim">
-            Buy tickets · claim prizes · claim refunds
+            Buy tickets - claim prizes - claim refunds
           </p>
         </div>
         {hasTicket && roundState && (
@@ -203,7 +203,7 @@ export default function UserActions({
             <p className="mt-1.5 text-sm text-yellow-400/80">
               Claim your prize of{" "}
               <span className="font-semibold text-yellow-300">
-                {formatEth(roundState!.prizePool)} ETH
+                {(formatEth(roundState.prizePoolWei) as any) / 1e9} Gwei
               </span>{" "}
               below.
             </p>
@@ -230,7 +230,7 @@ export default function UserActions({
               </span>
               {roundState && (
                 <span className="rounded-lg bg-lghost px-2.5 py-1 font-mono text-xs text-lsubtle ring-1 ring-lborder">
-                  {formatEth(roundState.ticketPrice)} ETH
+                  {(formatEth(roundState.ticketPriceWei) as any) / 1e9} Gwei
                 </span>
               )}
             </div>
@@ -246,7 +246,7 @@ export default function UserActions({
                 Ξ
               </div>
               <div className="flex w-full font-mono text-sm text-ltext select-none">
-                {ticketPrice}
+                10 Gwei
               </div>
               <div className="pointer-events-none text-[10px] font-bold uppercase tracking-wider text-ldim">
                 fixed

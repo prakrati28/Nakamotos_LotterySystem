@@ -1,20 +1,18 @@
 import { ethers } from "ethers";
 import { ETHERSCAN_BASE } from "./constants";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export function shortAddress(addr: string): string {
   if (!addr || addr.length < 10) return addr;
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
-export function formatEth(value: string | bigint, decimals = 4): string {
+export function formatEth(value: string | bigint, decimals = 4): Number {
   const n =
     typeof value === "bigint"
       ? parseFloat(ethers.formatEther(value))
       : parseFloat(value);
-  return n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: decimals,
-  });
+  return n;
 }
 
 export const etherscanTx = (h: string) => `${ETHERSCAN_BASE}/tx/${h}`;

@@ -198,8 +198,10 @@ export default function LotteryStatus({
                 label="Prize Pool"
                 value={
                   <span className="flex items-baseline gap-1.5">
-                    <span>{formatEth(roundState.prizePool as any)}</span>
-                    <span className="text-base font-normal text-ldim">ETH</span>
+                    <span>
+                      {(formatEth(roundState.prizePoolWei) as any) / 1e9}
+                    </span>
+                    <span className="text-base font-normal text-ldim">Gwei</span>
                   </span>
                 }
                 sub="Total collected"
@@ -208,7 +210,7 @@ export default function LotteryStatus({
                 icon={<Ticket className="h-4.5 w-4.5" />}
                 label="Tickets Sold"
                 value={roundState.totalTickets.toString()}
-                sub={`@ ${formatEth(roundState.ticketPrice as any)} ETH ea.`}
+                sub={`@ ${(formatEth(roundState.ticketPriceWei) as any) / 1e9} Gwei each`}
               />
               <StatCard
                 icon={<Trophy className="h-4.5 w-4.5" />}

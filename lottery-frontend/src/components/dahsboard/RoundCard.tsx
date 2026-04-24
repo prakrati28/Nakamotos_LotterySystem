@@ -210,7 +210,7 @@ export default function RoundCard({
               {
                 label: "Prize Pool",
                 value: round.prizePool
-                  ? `${(Number(round.prizePool) / 1e18).toFixed(4)} ETH`
+                  ? `${(Number(round.prizePool) / 1e9)} Gwei`
                   : "—",
               },
             ].map(({ label, value }) => (

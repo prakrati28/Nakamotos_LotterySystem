@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useSWR from "swr";
 
 export interface DbRound {
@@ -74,18 +74,17 @@ async function ownerFetch(
 }
 
 export function useOwnerApi(): OwnerApiReturn {
-  const [apiKey, setApiKey] = useState<string>(() =>
-    typeof window !== "undefined"
-      ? (localStorage.getItem("owner_api_key") ?? "")
-      : "",
-  );
+  const [apiKey, setApiKey] = useState<string>("");
   const [pending, setPending] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const stored = localStorage.getItem("owner_api_key");
+    if (stored) setApiKey(stored);
+  }, []);
 
   const handleSetApiKey = useCallback((k: string) => {
     setApiKey(k);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("owner_api_key", k);
-    }
+    localStorage.setItem("owner_api_key", k);
   }, []);
 
   const isAuthed = apiKey.length > 0;
@@ -104,7 +103,7 @@ export function useOwnerApi(): OwnerApiReturn {
       setPending((p) => ({ ...p, [key]: true }));
       try {
         const result = await fn();
-        mutate(); // refresh rounds list
+        mutate();
         return result;
       } finally {
         setPending((p) => ({ ...p, [key]: false }));

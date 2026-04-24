@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import useSWR from "swr";
 import { ethers } from "ethers";
 import { LOTTERY_ABI } from "@/abi/lottery";
@@ -40,69 +40,93 @@ export interface UseContractReturn {
   slashOwner: () => Promise<TxResult>;
 }
 
-async function fetchCurrentRound(): Promise<number> {
+async function fetchCurrentRoundState(): Promise<
+  RoundState & { _roundId: number }
+> {
   if (!CONTRACT_ADDRESS) throw new Error("Contract address not configured.");
-  const provider = new ethers.JsonRpcProvider(
-    process.env.NEXT_PUBLIC_RPC_URL ?? "",
-  );
-  const contract = new ethers.Contract(CONTRACT_ADDRESS, LOTTERY_ABI, provider);
-  const round = await contract.currentRound();
-  return Number(round);
-}
 
-async function fetchRoundState(
-  roundId: number,
-  userAddress: string | null,
-): Promise<RoundState> {
-  const res = await fetch(`/api/rounds/${roundId}`, { cache: "no-store" });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error ?? `API error ${res.status}`);
+  const roundRes = await fetch("/api/rounds/current", { cache: "no-store" });
+  if (!roundRes.ok) {
+    const err = await roundRes.json().catch(() => ({}));
+    throw new Error(err.error ?? `API error ${roundRes.status}`);
   }
-  const data = (await res.json()) as RoundState;
+  const { currentRound } = (await roundRes.json()) as { currentRound: number };
 
-  if (userAddress && window.ethereum) {
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        LOTTERY_ABI,
-        provider,
-      );
-      const tickets = await contract.userTickets(BigInt(roundId), userAddress);
-      data.userTickets = Number(tickets);
-    } catch {
-      data.userTickets = 0;
-    }
-  } else {
-    data.userTickets = 0;
+  const stateRes = await fetch(`/api/rounds/${currentRound}`, {
+    cache: "no-store",
+  });
+  if (!stateRes.ok) {
+    const err = await stateRes.json().catch(() => ({}));
+    throw new Error(err.error ?? `API error ${stateRes.status}`);
   }
-
-  return data;
+  const data = (await stateRes.json()) as RoundState;
+  return { ...data, _roundId: currentRound, userTickets: 0 };
 }
 
 export function useContract(wallet: WalletState): UseContractReturn {
-  const { data: currentRound } = useSWR(
-    CONTRACT_ADDRESS ? "currentRound" : null,
-    fetchCurrentRound,
-    { refreshInterval: 20_000 },
-  );
-
-  const roundKey =
-    currentRound !== undefined
-      ? ["roundState", currentRound, wallet.address]
-      : null;
+  const swrKey = CONTRACT_ADDRESS
+    ? ["contractState", wallet.address ?? "anon"]
+    : null;
 
   const {
-    data: roundState,
+    data: rawState,
     error,
     isLoading,
     mutate,
-  } = useSWR(
-    roundKey,
-    ([, id, addr]) => fetchRoundState(id as number, addr as string | null),
-    { refreshInterval: 12_000, revalidateOnFocus: true },
-  );
+  } = useSWR(swrKey, fetchCurrentRoundState, {
+    refreshInterval: 12_000,
+    revalidateOnFocus: true,
+    keepPreviousData: true,
+  });
+
+  const lastAugmentedKey = useRef<string>("");
+
+  useEffect(() => {
+    if (!rawState || !wallet.address || !window.ethereum) return;
+
+    const key = `${rawState._roundId}-${wallet.address}`;
+    if (lastAugmentedKey.current === key) return;
+    lastAugmentedKey.current = key;
+
+    (async () => {
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum!);
+        const contract = new ethers.Contract(
+          CONTRACT_ADDRESS,
+          LOTTERY_ABI,
+          provider,
+        );
+        const tickets = await contract.userTickets(
+          BigInt(rawState._roundId),
+          wallet.address,
+        );
+        mutate(
+          (prev) => (prev ? { ...prev, userTickets: Number(tickets) } : prev),
+          false,
+        );
+      } catch {}
+    })();
+  }, [rawState?._roundId, wallet.address, mutate]);
+
+  const roundState: RoundState | undefined = rawState
+    ? {
+        roundId: rawState.roundId,
+        phase: rawState.phase,
+        prizePool: rawState.prizePool,
+        prizePoolWei: rawState.prizePoolWei,
+        totalTickets: rawState.totalTickets,
+        winner: rawState.winner,
+        ticketPrice: rawState.ticketPrice,
+        ticketPriceWei: rawState.ticketPriceWei,
+        targetBlock: rawState.targetBlock,
+        currentBlock: rawState.currentBlock,
+        blocksUntilReveal: rawState.blocksUntilReveal,
+        revealWindowExpiry: rawState.revealWindowExpiry,
+        isRevealWindowOpen: rawState.isRevealWindowOpen,
+        prizeClaimed: rawState.prizeClaimed,
+        userTickets: rawState.userTickets,
+      }
+    : undefined;
 
   const getWriteContract = useCallback(() => {
     if (!wallet.signer) throw new Error("Wallet not connected.");
@@ -156,7 +180,7 @@ export function useContract(wallet: WalletState): UseContractReturn {
   return useMemo(
     () => ({
       roundState,
-      currentRound,
+      currentRound: rawState?._roundId,
       isLoading,
       error: error as Error | undefined,
       refreshState,
@@ -167,7 +191,7 @@ export function useContract(wallet: WalletState): UseContractReturn {
     }),
     [
       roundState,
-      currentRound,
+      rawState?._roundId,
       isLoading,
       error,
       refreshState,
