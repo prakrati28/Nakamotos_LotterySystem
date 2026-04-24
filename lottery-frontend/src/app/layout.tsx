@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Syne } from "next/font/google";
+import { Outfit } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-const syne = Syne({
+const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-syne",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-outfit",
   display: "swap",
 });
 
@@ -23,36 +23,34 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={syne.variable}>
+    <html lang="en" className={outfit.variable}>
       <head />
       <body>
         {children}
         <Toaster
           position="top-right"
           gutter={10}
-          containerStyle={{ top: 70 }}
+          containerStyle={{ top: 72 }}
           toastOptions={{
             duration: 6000,
             style: {
-              background: "#111827",
-              color: "#F1F5F9",
-              border: "1px solid #1F2A3C",
-              borderRadius: "10px",
-              fontSize: "13.5px",
-              fontFamily: "Geist, DM Sans, sans-serif",
-              padding: "12px 16px",
+              background: "#101828",
+              color: "#F0F5FF",
+              border: "1px solid #1E2E46",
+              borderRadius: "12px",
+              fontSize: "14px",
+              fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+              padding: "13px 17px",
               boxShadow:
-                "0 4px 16px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.5)",
-              maxWidth: "380px",
+                "0 4px 20px rgba(0,0,0,0.45), 0 1px 3px rgba(0,0,0,0.5)",
+              maxWidth: "390px",
             },
             success: {
-              iconTheme: { primary: "#10B981", secondary: "#111827" },
+              iconTheme: { primary: "#10B981", secondary: "#101828" },
             },
-            error: {
-              iconTheme: { primary: "#EF4444", secondary: "#111827" },
-            },
+            error: { iconTheme: { primary: "#EF4444", secondary: "#101828" } },
             loading: {
-              iconTheme: { primary: "#3B82F6", secondary: "#111827" },
+              iconTheme: { primary: "#4F8EF7", secondary: "#101828" },
             },
           }}
         />

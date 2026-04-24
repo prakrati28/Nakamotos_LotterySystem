@@ -25,7 +25,7 @@ interface LotteryStatusProps {
 }
 
 function Skeleton({ className = "" }: { className?: string }) {
-  return <div className={`skeleton rounded-lg ${className}`} />;
+  return <div className={`skeleton rounded-xl ${className}`} />;
 }
 
 function StatCard({
@@ -45,22 +45,24 @@ function StatCard({
     <div
       className={`relative overflow-hidden rounded-xl border p-5 transition-all ${
         accent
-          ? "border-laccent/20 bg-l-gradient-card bg-lcard shadow-lglow"
-          : "border-lborder bg-lcard shadow-lcard"
+          ? "border-laccent/25 bg-l-gradient-card bg-lcard shadow-lglow"
+          : "border-lborder bg-lcard"
       }`}
     >
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-ldim">
+        <span className="text-xs font-semibold uppercase tracking-widest text-ldim">
           {label}
         </span>
-        <span className={accent ? "text-laccent" : "text-ldim"}>{icon}</span>
+        <span className={`${accent ? "text-laccent" : "text-ldim"}`}>
+          {icon}
+        </span>
       </div>
-      <div className="text-xl font-semibold tracking-tight text-ltext">
+      <div className="text-2xl font-bold tracking-tight text-ltext">
         {value}
       </div>
-      {sub && <div className="mt-1 text-xs text-ldim">{sub}</div>}
+      {sub && <div className="mt-1.5 text-sm text-ldim">{sub}</div>}
       {accent && (
-        <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full bg-laccent/5 blur-2xl" />
+        <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-laccent/8 blur-2xl" />
       )}
     </div>
   );
@@ -86,17 +88,18 @@ export default function LotteryStatus({
 
   return (
     <section className="animate-slide-up rounded-2xl border border-lborder bg-lsurface shadow-lpanel">
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-lborder px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-laccent/10">
-            <Layers className="h-4 w-4 text-laccent" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
+            <Layers className="h-4.5 w-4.5 text-laccent" />
           </div>
           <div>
-            <h2 className="font-display text-[15px] font-semibold tracking-tight text-ltext">
+            <h2 className="font-display text-base font-semibold tracking-tight text-ltext">
               Round {currentRound !== undefined ? `#${currentRound}` : "—"}{" "}
               Overview
             </h2>
-            <p className="text-[11px] text-ldim">
+            <p className="text-xs text-ldim">
               Live contract state · auto-refreshes
             </p>
           </div>
@@ -104,7 +107,7 @@ export default function LotteryStatus({
         <div className="flex items-center gap-3">
           {phaseStyle && phaseLabel && (
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${phaseStyle.badge}`}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${phaseStyle.badge}`}
             >
               <span className={`h-1.5 w-1.5 rounded-full ${phaseStyle.dot}`} />
               {phaseLabel}
@@ -113,7 +116,7 @@ export default function LotteryStatus({
           <button
             onClick={onRefresh}
             disabled={isLoading}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-lborder text-ldim transition-all hover:border-lborderhi hover:text-ltext disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-lborder text-ldim transition-all hover:border-lborderhi hover:text-lsubtle disabled:opacity-40"
           >
             <RefreshCw
               className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`}
@@ -126,28 +129,30 @@ export default function LotteryStatus({
         {isLoading && !roundState ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-24" />
+              <Skeleton key={i} className="h-28" />
             ))}
           </div>
         ) : roundState ? (
           <>
+            {/* Slashed warning */}
             {isSlashed && (
-              <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/8 px-4 py-3.5 text-sm text-red-400">
-                <span className="text-lg">⚠</span>
+              <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/8 px-4 py-4 text-red-400">
+                <span className="text-xl">⚠</span>
                 <div>
-                  <p className="font-semibold">Owner Slashed</p>
-                  <p className="mt-0.5 text-red-400/70 text-xs">
+                  <p className="font-semibold text-base">Owner Slashed</p>
+                  <p className="mt-1 text-sm text-red-400/75">
                     The owner failed to reveal within the 250-block window.
                     Their collateral was confiscated. Participants can claim a
-                    refund.
+                    full refund.
                   </p>
                 </div>
               </div>
             )}
 
+            {/* Reveal countdown */}
             {showCountdown && (
               <div
-                className={`mb-5 flex items-center gap-3 rounded-xl border px-4 py-3.5 text-sm ${
+                className={`mb-5 flex items-center gap-3 rounded-xl border px-4 py-3.5 ${
                   windowExpired
                     ? "border-red-500/30 bg-red-500/8 text-red-400"
                     : canReveal
@@ -156,7 +161,7 @@ export default function LotteryStatus({
                 }`}
               >
                 <Clock className="h-4 w-4 shrink-0" />
-                <div>
+                <div className="text-sm">
                   {windowExpired ? (
                     <span className="font-semibold">
                       Reveal window expired — owner can be slashed!
@@ -179,33 +184,34 @@ export default function LotteryStatus({
               </div>
             )}
 
+            {/* Stats grid */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <StatCard
-                icon={<Layers className="h-4 w-4" />}
+                icon={<Layers className="h-4.5 w-4.5" />}
                 label="Phase"
                 value={phaseLabel ?? "—"}
                 sub={`Round #${currentRound}`}
                 accent
               />
               <StatCard
-                icon={<span className="text-base font-light">Ξ</span>}
+                icon={<span className="text-lg font-light">Ξ</span>}
                 label="Prize Pool"
                 value={
-                  <span className="flex items-baseline gap-1">
+                  <span className="flex items-baseline gap-1.5">
                     <span>{formatEth(roundState.prizePool as any)}</span>
-                    <span className="text-sm font-normal text-ldim">ETH</span>
+                    <span className="text-base font-normal text-ldim">ETH</span>
                   </span>
                 }
                 sub="Total collected"
               />
               <StatCard
-                icon={<Ticket className="h-4 w-4" />}
+                icon={<Ticket className="h-4.5 w-4.5" />}
                 label="Tickets Sold"
                 value={roundState.totalTickets.toString()}
-                sub={`@ ${formatEth(roundState.ticketPrice as any)} ETH each`}
+                sub={`@ ${formatEth(roundState.ticketPrice as any)} ETH ea.`}
               />
               <StatCard
-                icon={<Trophy className="h-4 w-4" />}
+                icon={<Trophy className="h-4.5 w-4.5" />}
                 label="Winner"
                 value={
                   hasWinner ? (
@@ -213,12 +219,12 @@ export default function LotteryStatus({
                       href={etherscanAddr(roundState.winner)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono text-base text-laccent underline-offset-2 hover:underline"
+                      className="font-mono text-lg text-laccent underline-offset-2 hover:underline"
                     >
                       {shortAddress(roundState.winner)}
                     </a>
                   ) : (
-                    <span className="text-base font-normal text-ldim">—</span>
+                    <span className="text-lg font-normal text-ldim">—</span>
                   )
                 }
                 sub={
@@ -231,19 +237,20 @@ export default function LotteryStatus({
               />
             </div>
 
-            <div className="mt-6 rounded-xl border border-lborder bg-lcard p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-ldim">
+            {/* Phase progress stepper */}
+            <div className="mt-6 rounded-xl border border-lborder bg-lcard p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-widest text-ldim">
                   Round Progress
                 </span>
-                <span className="text-[11px] text-ldim">
+                <span className="font-mono text-xs text-ldim">
                   Block #{roundState.currentBlock.toLocaleString()}
                 </span>
               </div>
               <div className="relative flex items-center">
-                <div className="absolute left-0 right-0 top-[11px] h-px bg-lborder" />
+                <div className="absolute left-0 right-0 top-[12px] h-px bg-lborder" />
                 <div
-                  className={`absolute left-0 top-[11px] h-px transition-all duration-700 ${isSlashed ? "bg-red-400" : "bg-laccent"}`}
+                  className={`absolute left-0 top-[12px] h-px transition-all duration-700 ${isSlashed ? "bg-red-400" : "bg-laccent"}`}
                   style={{
                     width: `${Math.min(100, (PHASE_STEPS.indexOf(phase as (typeof PHASE_STEPS)[number]) / (PHASE_STEPS.length - 1)) * 100)}%`,
                   }}
@@ -257,10 +264,10 @@ export default function LotteryStatus({
                   return (
                     <div
                       key={step}
-                      className="relative flex flex-1 flex-col items-center gap-2"
+                      className="relative flex flex-1 flex-col items-center gap-2.5"
                     >
                       <div
-                        className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 text-[9px] font-bold transition-all ${
+                        className={`relative z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 text-[10px] font-bold transition-all ${
                           done
                             ? "border-laccent bg-laccent text-white"
                             : current
@@ -271,7 +278,7 @@ export default function LotteryStatus({
                         {done ? "✓" : n + 1}
                       </div>
                       <span
-                        className={`text-[10px] font-medium ${current ? "text-laccent" : done ? "text-lsubtle" : "text-ldim"}`}
+                        className={`text-xs font-medium ${current ? "text-laccent" : done ? "text-lsubtle" : "text-ldim"}`}
                       >
                         {PHASE_STEP_LABELS[step as any]}
                       </span>
@@ -282,8 +289,8 @@ export default function LotteryStatus({
             </div>
           </>
         ) : (
-          <div className="py-10 text-center">
-            <p className="text-sm text-ldim">
+          <div className="py-12 text-center">
+            <p className="text-base text-ldim">
               Could not load contract data. Verify the contract address and
               network.
             </p>

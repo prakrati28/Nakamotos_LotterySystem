@@ -8,72 +8,68 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Display / headings — Syne: geometric, modern, distinctive
-        display: ["'Syne'", "sans-serif"],
-        // Body copy — Geist: clean, technical, professional
-        sans: ["'Geist'", "sans-serif"],
-        // Code / addresses — Geist Mono
-        mono: ["'Geist Mono'", "monospace"],
+        display: ["'Outfit'", "sans-serif"],
+        sans: ["'Plus Jakarta Sans'", "sans-serif"],
+        mono: ["'JetBrains Mono'", "monospace"],
       },
       colors: {
-        // All prefixed with "l" to avoid Tailwind core conflicts
-        lbg:       "#080B12",   // near-black with blue tint
-        lsurface:  "#0D1117",   // GitHub-dark inspired surface
-        lcard:     "#111827",   // card background
-        lpanel:    "#161D2B",   // slightly elevated panel
-        lborder:   "#1F2A3C",   // subtle border
-        lborderhi: "#2D3F57",   // highlighted border
-        laccent:   "#3B82F6",   // electric blue — professional, not garish
-        laccenthi: "#60A5FA",   // lighter accent for hover
-        laccentsub:"#1D4ED8",   // darker accent
-        lgold:     "#F59E0B",   // amber for prize/winner highlights
-        lgoldhi:   "#FCD34D",
-        lwarn:     "#EF4444",   // error red
-        lwarnhi:   "#FCA5A5",
-        lsuccess:  "#10B981",   // emerald green
-        lsuccesshi:"#34D399",
-        lyellow:   "#FBBF24",   // commit phase
-        ltext:     "#F1F5F9",   // primary text
-        lsubtle:   "#94A3B8",   // secondary text
-        ldim:      "#475569",   // muted / disabled
-        lghost:    "#1E293B",   // ghost backgrounds
+        lbg: "#070A10",
+        lsurface: "#0C1120",
+        lcard: "#101828",
+        lpanel: "#141E2E",
+        lborder: "#1E2E46",
+        lborderhi: "#2E4466",
+        laccent: "#4F8EF7",
+        laccenthi: "#73AAFF",
+        laccentsub: "#2563EB",
+        lgold: "#F59E0B",
+        lgoldhi: "#FCD34D",
+        lwarn: "#EF4444",
+        lwarnhi: "#FCA5A5",
+        lsuccess: "#10B981",
+        lsuccesshi: "#34D399",
+        lyellow: "#FBBF24",
+        ltext: "#F0F5FF",
+        lsubtle: "#A8BCDA",
+        ldim: "#6B88AA",
+        lghost: "#192233",
       },
       boxShadow: {
-        lcard:    "0 1px 3px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)",
-        lpanel:   "0 2px 8px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.25)",
-        lglow:    "0 0 24px rgba(59,130,246,0.2)",
-        lgolden:  "0 0 24px rgba(245,158,11,0.2)",
-        linner:   "inset 0 1px 0 rgba(255,255,255,0.04)",
+        lcard: "0 1px 3px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.35)",
+        lpanel: "0 2px 8px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.3)",
+        lglow: "0 0 28px rgba(79,142,247,0.22)",
+        lgolden: "0 0 24px rgba(245,158,11,0.2)",
+        linner: "inset 0 1px 0 rgba(255,255,255,0.05)",
       },
       backgroundImage: {
         "l-gradient-card":
-          "linear-gradient(135deg, rgba(59,130,246,0.04) 0%, transparent 60%)",
+          "linear-gradient(135deg, rgba(79,142,247,0.06) 0%, transparent 60%)",
         "l-gradient-gold":
-          "linear-gradient(135deg, rgba(245,158,11,0.06) 0%, transparent 60%)",
+          "linear-gradient(135deg, rgba(245,158,11,0.07) 0%, transparent 60%)",
         "l-gradient-hero":
-          "linear-gradient(180deg, rgba(59,130,246,0.08) 0%, transparent 40%)",
+          "linear-gradient(180deg, rgba(79,142,247,0.1) 0%, transparent 40%)",
       },
       animation: {
-        "fade-in":       "fadeIn 0.5s ease forwards",
-        "slide-up":      "slideUp 0.4s cubic-bezier(0.16,1,0.3,1) forwards",
-        "slide-up-d1":   "slideUp 0.4s 0.08s cubic-bezier(0.16,1,0.3,1) both",
-        "slide-up-d2":   "slideUp 0.4s 0.16s cubic-bezier(0.16,1,0.3,1) both",
-        "slide-up-d3":   "slideUp 0.4s 0.24s cubic-bezier(0.16,1,0.3,1) both",
-        "pulse-slow":    "pulse 3s cubic-bezier(0.4,0,0.6,1) infinite",
-        "spin-slow":     "spin 2s linear infinite",
-        "shimmer":       "shimmer 1.5s infinite",
+        "fade-in": "fadeIn 0.5s ease forwards",
+        "slide-up": "slideUp 0.45s cubic-bezier(0.16,1,0.3,1) forwards",
+        "slide-up-d1": "slideUp 0.45s 0.08s cubic-bezier(0.16,1,0.3,1) both",
+        "slide-up-d2": "slideUp 0.45s 0.16s cubic-bezier(0.16,1,0.3,1) both",
+        "slide-up-d3": "slideUp 0.45s 0.24s cubic-bezier(0.16,1,0.3,1) both",
+        "pulse-slow": "pulse 3s cubic-bezier(0.4,0,0.6,1) infinite",
+        "spin-slow": "spin 2s linear infinite",
+        shimmer: "shimmer 1.5s infinite",
       },
       keyframes: {
         fadeIn: {
-          "0%":   { opacity: "0" },
+          "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
         slideUp: {
-          "0%":   { opacity: "0", transform: "translateY(16px)" },
+          "0%": { opacity: "0", transform: "translateY(14px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         shimmer: {
-          "0%":   { backgroundPosition: "-200% 0" },
+          "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
       },

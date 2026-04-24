@@ -15,8 +15,7 @@ import {
   Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import type { DbRound } from "@/hooks/useOwnerApi";
-import type { OwnerApiReturn } from "@/hooks/useOwnerApi";
+import type { DbRound, OwnerApiReturn } from "@/hooks/useOwnerApi";
 import {
   PHASE_BADGE_STYLES,
   PHASE_LABELS,
@@ -53,12 +52,12 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="ml-1.5 text-ldim hover:text-lsubtle"
+      className="ml-2 text-ldim hover:text-lsubtle"
     >
       {copied ? (
-        <Check className="h-3 w-3 text-emerald-400" />
+        <Check className="h-3.5 w-3.5 text-emerald-400" />
       ) : (
-        <Copy className="h-3 w-3" />
+        <Copy className="h-3.5 w-3.5" />
       )}
     </button>
   );
@@ -90,7 +89,7 @@ function ActionButton({
     <button
       onClick={onClick}
       disabled={disabled || isLoading}
-      className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${colors[variant]}`}
+      className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${colors[variant]}`}
     >
       {isLoading ? (
         <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -115,7 +114,6 @@ export default function RoundCard({
     PHASE_BADGE_STYLES[phase as any] ?? PHASE_BADGE_STYLES["Open" as any];
   const phaseLabel = PHASE_LABELS[phase as any] ?? phase;
 
-  // Pending states for this specific round
   const isPendingSecret = api.pending[`secret-${round.id}`];
   const isPendingClose = api.pending[`close-${round.id}`];
   const isPendingCommit = api.pending[`commit-${round.id}`];
@@ -154,35 +152,35 @@ export default function RoundCard({
   return (
     <div
       className={`rounded-2xl border bg-lsurface shadow-lcard transition-all ${
-        isCurrentRound ? "border-laccent/20 shadow-lglow" : "border-lborder"
+        isCurrentRound ? "border-laccent/25 shadow-lglow" : "border-lborder"
       }`}
     >
-      {/* ── Card Header ─────────────────────────────────────────────────── */}
+      {/* Card Header */}
       <div
         className="flex cursor-pointer items-center gap-4 px-6 py-4"
         onClick={() => setExpanded((e) => !e)}
       >
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-lborder bg-lcard font-mono text-sm font-bold text-lsubtle">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-lborder bg-lcard font-mono text-sm font-bold text-lsubtle">
           {round.id}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-display font-semibold text-ltext">
+          <div className="flex items-center gap-2.5">
+            <span className="font-display text-base font-semibold text-ltext">
               Round #{round.id}
             </span>
             {isCurrentRound && (
-              <span className="rounded-full bg-laccent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-laccent ring-1 ring-laccent/20">
+              <span className="rounded-full bg-laccent/12 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-laccent ring-1 ring-laccent/20">
                 Current
               </span>
             )}
           </div>
-          <p className="text-[11px] text-ldim">
+          <p className="text-xs text-ldim mt-0.5">
             Created {new Date(round.createdAt).toLocaleDateString()}
             {round.winner && ` · Winner: ${shortAddress(round.winner)}`}
           </p>
         </div>
         <span
-          className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${phaseStyle.badge}`}
+          className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ring-1 ${phaseStyle.badge}`}
         >
           <span className={`h-1.5 w-1.5 rounded-full ${phaseStyle.dot}`} />
           {phaseLabel}
@@ -194,7 +192,7 @@ export default function RoundCard({
         )}
       </div>
 
-      {/* ── Expanded body ────────────────────────────────────────────────── */}
+      {/* Expanded Body */}
       {expanded && (
         <div className="border-t border-lborder">
           {/* Info grid */}
@@ -216,23 +214,25 @@ export default function RoundCard({
                   : "—",
               },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-lsurface px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-ldim">
+              <div key={label} className="bg-lsurface px-4 py-3.5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-ldim">
                   {label}
                 </p>
-                <p className="mt-0.5 font-mono text-sm text-ltext">{value}</p>
+                <p className="mt-1 font-mono text-sm font-medium text-ltext">
+                  {value}
+                </p>
               </div>
             ))}
           </div>
 
-          {/* Hash info */}
+          {/* Committed hash */}
           {round.committedHash && (
-            <div className="border-b border-lborder px-6 py-3">
-              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-ldim">
+            <div className="border-b border-lborder px-6 py-3.5">
+              <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ldim">
                 Committed Hash
               </p>
               <div className="flex items-center gap-1">
-                <span className="break-all font-mono text-[11px] text-lsubtle">
+                <span className="break-all font-mono text-xs text-lsubtle">
                   {round.committedHash}
                 </span>
                 <CopyButton value={round.committedHash} />
@@ -240,19 +240,19 @@ export default function RoundCard({
             </div>
           )}
 
-          {/* Tx hashes */}
+          {/* Tx links */}
           {(round.closeSaleTxHash ||
             round.commitTxHash ||
             round.revealTxHash) && (
-            <div className="flex flex-wrap gap-4 border-b border-lborder px-6 py-3">
+            <div className="flex flex-wrap gap-4 border-b border-lborder px-6 py-3.5">
               {round.closeSaleTxHash && (
                 <a
                   href={etherscanTx(round.closeSaleTxHash)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] text-laccent hover:text-laccenthi"
+                  className="flex items-center gap-1.5 text-xs text-laccent hover:text-laccenthi"
                 >
-                  Close Sale Tx <ExternalLink className="h-2.5 w-2.5" />
+                  Close Sale Tx <ExternalLink className="h-3 w-3" />
                 </a>
               )}
               {round.commitTxHash && (
@@ -260,9 +260,9 @@ export default function RoundCard({
                   href={etherscanTx(round.commitTxHash)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] text-laccent hover:text-laccenthi"
+                  className="flex items-center gap-1.5 text-xs text-laccent hover:text-laccenthi"
                 >
-                  Commit Tx <ExternalLink className="h-2.5 w-2.5" />
+                  Commit Tx <ExternalLink className="h-3 w-3" />
                 </a>
               )}
               {round.revealTxHash && (
@@ -270,27 +270,26 @@ export default function RoundCard({
                   href={etherscanTx(round.revealTxHash)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] text-laccent hover:text-laccenthi"
+                  className="flex items-center gap-1.5 text-xs text-laccent hover:text-laccenthi"
                 >
-                  Reveal Tx <ExternalLink className="h-2.5 w-2.5" />
+                  Reveal Tx <ExternalLink className="h-3 w-3" />
                 </a>
               )}
             </div>
           )}
 
-          {/* ── Owner Actions (current round only) ─────────────────────── */}
+          {/* Owner Actions */}
           {isCurrentRound && (
-            <div className="space-y-3 p-6">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-ldim">
+            <div className="space-y-4 p-6">
+              <p className="text-xs font-semibold uppercase tracking-widest text-ldim">
                 Owner Actions
               </p>
 
-              {/* Workflow guide */}
               <div className="rounded-xl border border-lborder bg-lcard p-4">
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-4">
                   {/* Step 1: Close Sale */}
                   <div
-                    className={`flex-1 min-w-[200px] rounded-lg border p-4 ${canClose ? "border-orange-500/20 bg-orange-500/5" : "border-lborder opacity-50"}`}
+                    className={`flex-1 min-w-[200px] rounded-xl border p-4 ${canClose ? "border-orange-500/20 bg-orange-500/5" : "border-lborder opacity-50"}`}
                   >
                     <div className="mb-3 flex items-center gap-2">
                       <Lock className="h-4 w-4 text-orange-400" />
@@ -298,7 +297,7 @@ export default function RoundCard({
                         1. Close Sale
                       </span>
                     </div>
-                    <p className="mb-3 text-xs text-ldim">
+                    <p className="mb-4 text-sm text-ldim">
                       Stop ticket purchases. Phase must be Open.
                     </p>
                     <ActionButton
@@ -316,7 +315,7 @@ export default function RoundCard({
 
                   {/* Step 2: Generate Secret */}
                   <div
-                    className={`flex-1 min-w-[200px] rounded-lg border p-4 ${canSecret ? "border-yellow-500/20 bg-yellow-500/5" : "border-lborder opacity-50"}`}
+                    className={`flex-1 min-w-[200px] rounded-xl border p-4 ${canSecret ? "border-yellow-500/20 bg-yellow-500/5" : "border-lborder opacity-50"}`}
                   >
                     <div className="mb-3 flex items-center gap-2">
                       <KeyRound className="h-4 w-4 text-yellow-400" />
@@ -324,7 +323,7 @@ export default function RoundCard({
                         2. Generate Secret
                       </span>
                     </div>
-                    <p className="mb-3 text-xs text-ldim">
+                    <p className="mb-4 text-sm text-ldim">
                       {round.secret ? (
                         <span className="text-emerald-400">
                           ✓ Secret already stored
@@ -347,7 +346,7 @@ export default function RoundCard({
 
                   {/* Step 3: Commit Hash */}
                   <div
-                    className={`flex-1 min-w-[200px] rounded-lg border p-4 ${canCommit ? "border-laccent/20 bg-laccent/5" : "border-lborder opacity-50"}`}
+                    className={`flex-1 min-w-[200px] rounded-xl border p-4 ${canCommit ? "border-laccent/20 bg-laccent/5" : "border-lborder opacity-50"}`}
                   >
                     <div className="mb-3 flex items-center gap-2">
                       <Hash className="h-4 w-4 text-laccent" />
@@ -355,13 +354,13 @@ export default function RoundCard({
                         3. Commit Hash
                       </span>
                     </div>
-                    <p className="mb-2 text-xs text-ldim">
+                    <p className="mb-3 text-sm text-ldim">
                       Post keccak256(secret) on-chain with collateral bond.
                     </p>
-                    <div className="mb-3 flex items-center gap-2">
-                      <span className="text-xs text-ldim">Collateral:</span>
+                    <div className="mb-4 flex items-center gap-2">
+                      <span className="text-sm text-ldim">Collateral:</span>
                       <div className="relative flex-1">
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 font-mono text-xs text-ldim">
+                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 font-mono text-xs text-ldim">
                           Ξ
                         </span>
                         <input
@@ -370,11 +369,11 @@ export default function RoundCard({
                           min="0.01"
                           value={collateral}
                           onChange={(e) => setCollateral(e.target.value)}
-                          className="w-full rounded-md border border-lborder bg-lbg pl-6 pr-2 py-1.5 font-mono text-xs text-ltext outline-none focus:border-laccent/60"
+                          className="w-full rounded-lg border border-lborder bg-lbg pl-7 pr-2 py-2 font-mono text-xs text-ltext outline-none focus:border-laccent/60"
                           disabled={!canCommit}
                         />
                       </div>
-                      <span className="text-xs text-ldim">ETH</span>
+                      <span className="text-sm text-ldim">ETH</span>
                     </div>
                     <ActionButton
                       label="Commit Hash"
@@ -390,7 +389,7 @@ export default function RoundCard({
 
                   {/* Step 4: Reveal & Draw */}
                   <div
-                    className={`flex-1 min-w-[200px] rounded-lg border p-4 ${canReveal ? "border-emerald-500/20 bg-emerald-500/5" : "border-lborder opacity-50"}`}
+                    className={`flex-1 min-w-[200px] rounded-xl border p-4 ${canReveal ? "border-emerald-500/20 bg-emerald-500/5" : "border-lborder opacity-50"}`}
                   >
                     <div className="mb-3 flex items-center gap-2">
                       <Eye className="h-4 w-4 text-emerald-400" />
@@ -398,11 +397,11 @@ export default function RoundCard({
                         4. Reveal & Draw
                       </span>
                     </div>
-                    <p className="mb-3 text-xs text-ldim">
+                    <p className="mb-4 text-sm text-ldim">
                       Reveal the stored secret after the target block.
                       {round.targetBlock && (
-                        <span className="block mt-1 font-mono text-yellow-400">
-                          Target block: #{round.targetBlock}
+                        <span className="block mt-1.5 font-mono text-xs text-yellow-400">
+                          Target: #{round.targetBlock}
                         </span>
                       )}
                     </p>
@@ -423,9 +422,9 @@ export default function RoundCard({
             </div>
           )}
 
-          {/* ── Audit Log ─────────────────────────────────────────────── */}
+          {/* Audit Log */}
           {round.userlog.length > 0 && (
-            <div className="border-t border-lborder px-6 py-5">
+            <div className="border-t border-lborder px-6 py-6">
               <AuditLog logs={round.userlog} />
             </div>
           )}
