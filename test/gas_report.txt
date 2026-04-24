@@ -66,7 +66,7 @@ Ran 1 test suite in 174.50ms (167.31ms CPU time): 52 tests passed, 0 failed, 0 s
 GAS REPORT
 -------------------------------------------------------------------------
 
-$ forge test --match-path test/lotterytest.t.sol --gas-report   
+  forge test --match-path test/lotterytest.t.sol --gas-report   
     --contracts src/lottery.sol 2>&1 | grep -A 30 "Function Name"
 | Function Name                                | Min             | Avg   | Median | Max    | # Calls |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
@@ -101,13 +101,11 @@ $ forge test --match-path test/lotterytest.t.sol --gas-report
 | startNewRound                                | 23815           | 31093 | 31844  | 35371  | 6       |
 
 
-forge test --match-path test/lotterytest.t.sol --gas-report \
-  --contracts src/gasOptimisedLottery.sol 2>&1 | grep -A 30 "Function Name"
-
-
+  forge test --match-path test/lotterytest.t.sol --gas-report 
+      --contracts src/gasOptimisedLottery.sol 2>&1 | grep -A 30 "Function Name"   
 | Function Name                                | Min             | Avg   | Median | Max    | # Calls |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
-| buyTicket                                    | 26006           | 91181 | 84865  | 119065 | 1573    |
+| buyTicket                                    | 26006           | 91113 | 84865  | 119065 | 1590    |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
 | claimPrize                                   | 29666           | 33757 | 30051  | 39606  | 5       |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
@@ -131,7 +129,7 @@ forge test --match-path test/lotterytest.t.sol --gas-report \
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
 | prizePool                                    | 2886            | 2886  | 2886   | 2886   | 265     |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
-| revealAndDraw                                | 24517           | 44121 | 53788  | 53788  | 17      |
+| revealAndDraw                                | 24517           | 44031 | 53635  | 53635  | 17      |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
 | slashOwner                                   | 25967           | 30891 | 32395  | 32395  | 7       |
 |----------------------------------------------+-----------------+-------+--------+--------+---------|
@@ -140,55 +138,73 @@ forge test --match-path test/lotterytest.t.sol --gas-report \
 
 
 1. Identifying the Most Expensive Function
-While `buyTicket` and `commitHash` have the highest raw maximum gas costs 
-due to expensive storage writing operations (SSTORE), the function 
-specifically targeted for optimization in these files is `revealAndDraw`. 
-It is a computationally heavy function containing complex keccak256 
-hashing and multiple state reads.
+While `buyTicket` and `commitHash` have the highest raw maximum gas costs
+due to expensive storage writing operations (SSTORE), the function
+specifically targeted for optimization is `revealAndDraw`. It is a
+computationally heavy function containing complex keccak256 hashing,
+blockhash lookups, and multiple state reads.
 
 2. Before and After Gas Numbers
-Based on the provided Foundry gas-report logs, the numbers for 
-`revealAndDraw` are:
+Based on the Foundry gas-report logs, the metrics for the `revealAndDraw`
+function show a distinct reduction in gas consumption after applying the
+optimizations.
 
-- Before Optimisation (lottery.sol): 
+- Before Optimization (lottery.sol): 
   Min: 24,517 | Avg: 44,121 | Median: 53,788 | Max: 53,788
 
-- After Optimisation (gasOptimisedLottery.sol): 
-  Min: 24,517 | Avg: 44,121 | Median: 53,788 | Max: 53,788
+- After Optimization (gasOptimisedLottery.sol): 
+  Min: 24,517 | Avg: 44,031 | Median: 53,635 | Max: 53,635
 
+Total Savings: The optimizations successfully reduced the maximum execution
+cost by 153 gas and the average cost by 90 gas per call.
 
-3. Why was Optimization Needed
-In the Ethereum Virtual Machine (EVM), interacting with state variables 
-stored on the blockchain (SLOAD operations) is highly expensive. 
+3. Why Optimization Was Needed
+In the Ethereum Virtual Machine (EVM), interacting with state variables
+stored on the blockchain (SLOAD operations) is highly expensive.
 
-- The first time a state variable is read in a transaction (a "cold" 
-  read), it costs 2,100 gas. 
-- Subsequent reads of that exact same variable in the same transaction 
-  (a "warm" read) cost 100 gas each. 
-- In contrast, reading a variable from local memory or the stack costs 
-  roughly ~3 gas. 
+- A "cold" read (first access in a transaction) costs 2,100 gas.
+- A "warm" read (subsequent access in the same transaction) costs 100 gas.
+- Reading a variable from local memory or the stack costs roughly ~3 gas.
 
-The unoptimized lottery.sol contract forces the EVM to perform multiple 
-redundant "warm" reads by calling round.targetBlock, round.winner, and 
-round.prizePool directly from storage multiple times.
+Additionally, Solidity 0.8.0+ introduces built-in safety checks for math
+operations, including a zero-divisor check (ISZERO, PUSH, JUMPI opcodes)
+that executes before every division or modulo operation, adding unnecessary
+gas overhead if the divisor is already known to be non-zero.
 
-4. How It Was Optimized 
-The gasOptimisedLottery.sol file fixes this inefficiency by implementing 
-a memory caching strategy. Instead of reading from the `round` storage 
-pointer repeatedly, the contract reads the state variable once, saves it 
-to a local memory variable, and references that local variable thereafter:
+4. How It Was Optimized
+The gas reduction of 153 gas was achieved by combining two distinct
+optimization strategies:
 
-- Caching targetBlock: The code stores round.targetBlock into a local 
-  variable (_targetBlock). It uses this cheap stack variable for the two 
-  require statements and to fetch the futureBlockHash, skipping multiple 
-  SLOADs.
+A. Removing Redundant Math Checks (`unchecked` block)
+In the original contract, calculating the winner index used a standard
+modulo operation (% totalParticipants). Because Solidity cannot look across
+different functions to prove that totalParticipants is greater than zero
+at this exact moment, it injects a safety check to prevent dividing by zero.
+However, the contract's phase architecture guarantees totalParticipants > 0
+because the closeSale() function explicitly requires it before the lottery
+can ever reach the Committed or Drawn phases.
 
-- Caching winner: Instead of writing the winner to storage and then 
-  reading it back out for the event emission, it caches it locally as 
-  _winner, writes it to storage, and passes _winner to the event.
+* The Fix: By wrapping the modulo operation in an `unchecked { }` block,
+  we explicitly instruct the compiler to drop the zero-divisor check,
+  saving the overhead of those opcodes.
 
-- Caching prizePool: The code reads the prize pool into a local variable 
-  (_prizePool) right before the transfer and event emission, preventing 
-  the need to fetch it from storage during the WinnerDrawn event.
+B. Explicit Memory Caching (Preventing Stack Shuffling Penalties)
+When complex block scopes (like the unchecked block) are introduced, the
+Solidity compiler's optimizer can lose track of storage pointers, forcing
+it to fall back to expensive "warm" SLOAD reads and triggering
+stack-shuffling operations (SWAP, DUP).
+
+* The Fix: To secure the gas savings from the unchecked block, explicit
+  memory caching was implemented. State variables were read from storage
+  exactly once, saved to local memory, and referenced locally thereafter:
+  
+  - Caching targetBlock: Stored as _targetBlock to validate require
+    statements and fetch the futureBlockHash.
+  
+  - Caching winner: Stored locally as _winner to be passed into the
+    WinnerDrawn event without re-reading from storage.
+  
+  - Caching prizePool: Read into _prizePool prior to the external call
+    and event emission.
 
 -------------------------------------------------------------------------
