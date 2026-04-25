@@ -176,7 +176,6 @@ contract Lottery is Ownable, ReentrancyGuard {
             )
         ) % totalParticipants;
 
-
         round.winner = round.participants[winnerIndex];
         round.phase  = Phase.Drawn;
         

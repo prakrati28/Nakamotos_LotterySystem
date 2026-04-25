@@ -109,7 +109,7 @@ contract Lottery is Ownable, ReentrancyGuard {
         require(round.phase == Phase.SaleClosed, "Lottery: must close sale first");
         require(_hash != bytes32(0),             "Lottery: hash cannot be zero");
         require(round.participants.length > 0,   "Lottery: no participants");
-        require(msg.value > 0,                   "Lottery: must deposit collateral");
+        require(msg.value == round.prizePool, "Lottery: collateral must match the prize pool");
         
         round.lockedCollateral = msg.value;
         round.targetBlock      = block.number + 10;
