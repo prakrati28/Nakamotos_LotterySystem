@@ -1,133 +1,373 @@
-# Project [4] - Nakamoto's Lottery System
+# Nakamoto's Lottery System
 
-On-chain commit-reveal lottery with a Next.js frontend, Foundry contracts, and owner workflows for managing rounds.
+> On-chain commit-reveal lottery with a Next.js frontend, Foundry smart contracts, an Express backend, and owner workflows for managing rounds.
+
+---
 
 ## Team Members
 
-| No. | Name            | Roll Number |
-| 1   | Alaya Dcruz     | 240001007   |
-| 2   | Anushka Krishan | 240001012   |
-| 3   | Prakrati Pawar  | 240001053   |
-| 4   | Vanshika Gupta  | 240001076   |
-| 5   | Kartikey Raghav | 240021008   |
-| 6   | Trijal Mathuria | 240001073   |
+| No. | Name             | Roll Number |
+|-----|------------------|-------------|
+| 1   | Alaya Dcruz      | 240001007   |
+| 2   | Anushka Krishan  | 240001012   |
+| 3   | Prakrati Pawar   | 240001053   |
+| 4   | Vanshika Gupta   | 240001076   |
+| 5   | Kartikey Raghav  | 240021008   |
+| 6   | Trijal Mathuria  | 240001073   |
+
+---
 
 ## Overview
 
-Nakamoto's Lottery System is a commit-reveal on-chain lottery with a Next.js frontend, Foundry smart contracts, and a backend/API layer for owner actions and round management.
+Nakamoto's Lottery System is a multi-round, commit-reveal on-chain lottery deployed on the Ethereum Sepolia testnet. The owner commits a hashed secret, locks collateral equal to the prize pool, and later reveals the secret to deterministically draw a winner using `keccak256(secret, blockhash, participantCount)`. If the owner withholds the reveal, anyone can slash the owner and participants claim proportional refunds (including the owner's collateral).
+
+A **Chainlink VRF v2.5** variant (`vrf/LotteryVRFChainlink.sol`) replaces the commit-reveal flow with verifiable on-chain randomness.
+
+---
 
 ## Project Snapshot
 
-| Item            | Details               |
-| Project         | Project 4             |
-| Contract Model  | Commit-reveal lottery |
-| Frontend        | Next.js               |
-| Smart Contracts | Solidity + Foundry    |
-| Chain Target    | Sepolia               |
+| Item            | Details                                  |
+|-----------------|------------------------------------------|
+| Project         | Project 4                                |
+| Contract Model  | Commit-Reveal Lottery (+ VRF variant)    |
+| Frontend        | Next.js 14 (App Router)                  |
+| Backend         | Express 5 + Prisma ORM                   |
+| Smart Contracts | Solidity 0.8.20 · Foundry (forge/cast)   |
+| Chain Target    | Ethereum Sepolia                         |
+| Security        | OpenZeppelin Ownable + ReentrancyGuard   |
+| Static Analysis | Slither                                  |
+
+---
 
 ## Features
 
-- Buy lottery tickets directly from the web UI.
-- Track the current round, prize pool, and ticket counts.
-- Close sale, commit hash, reveal, and draw winner through owner actions.
-- Claim prize or refund depending on the round outcome.
-- Persist round and action state through Prisma-backed APIs.
+- **Buy lottery tickets** directly from the web UI with MetaMask.
+- **Track** the current round, prize pool, ticket count, and phase in real time.
+- **Owner dashboard** — close sale, commit hash, reveal & draw winner.
+- **Claim prize** — the winner withdraws the entire prize pool.
+- **Claim refund** — if the owner is slashed, participants get proportional refunds (ticket cost + share of owner's collateral).
+- **Multi-round** — finished rounds are archived; a new round can be started immediately.
+- **Chainlink VRF variant** for tamper-proof on-chain randomness.
+- **Prisma-backed APIs** persist round and action state for the backend.
+
+---
+
+## Repository Structure
+
+```
+Nakamotos_LotterySystem/
+├── src/
+│   ├── lottery.sol                  # Main commit-reveal lottery contract
+│   └── gasOptimisedLottery.sol      # Gas-optimised variant (unchecked + caching)
+├── vrf/
+│   └── LotteryVRFChainlink.sol      # Chainlink VRF v2.5 variant
+├── test/
+│   ├── lotterytest.t.sol            # 52-test Foundry test suite
+│   ├── coverage_report.txt          # 100% line/statement/function coverage
+│   └── gas_report.txt               # Forge gas report + optimisation analysis
+├── script/
+│   └── Deploy.s.sol                 # Foundry deployment script
+├── lottery-frontend/                # Next.js 14 frontend (App Router)
+│   ├── src/
+│   │   ├── app/                     # Pages and API routes
+│   │   ├── components/              # React components
+│   │   ├── hooks/                   # Custom React hooks
+│   │   ├── lib/                     # Utilities and contract config
+│   │   └── abi/                     # Contract ABI JSON
+│   └── prisma/
+│       └── schema.prisma            # Prisma schema for round state
+├── backend/                         # Express API server
+│   ├── server.js                    # Entry point
+│   ├── routers/ownerRouter.js       # Owner action endpoints
+│   ├── lib/                         # Shared utilities
+│   ├── middlewares/                  # Express middleware
+│   └── prisma/
+│       └── schema.prisma            # Prisma schema
+├── slither-reports/                 # Slither static analysis output
+├── broadcast/                       # Foundry broadcast artifacts
+├── foundry.toml                     # Foundry configuration
+├── remappings.txt                   # Solidity import remappings
+└── README.md                       
+```
+
+---
 
 ## Prerequisites
 
-- Node.js 18+ or 20+
-- npm
-- Foundry (`forge`, `cast`, `anvil`)
-- MetaMask
-- Sepolia ETH for testing
-- A Sepolia RPC endpoint
+| Tool             | Version    | Purpose                          |
+|------------------|------------|----------------------------------|
+| **Node.js**      | 18+ / 20+ | Frontend & backend runtime       |
+| **npm**          | 9+         | Package manager                  |
+| **Foundry**      | Latest     | `forge`, `cast`, `anvil`         |
+| **MetaMask**     | Latest     | Browser wallet for Sepolia       |
+| **Sepolia ETH**  | —          | Testnet gas for transactions     |
+| **Sepolia RPC**  | —          | e.g. Alchemy / Infura endpoint   |
+
+Install Foundry (if not already):
+
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+
+---
 
 ## Setup
 
-### 1. Open the repository
+### 1. Clone the Repository
 
-Open the `Nakamotos_LotterySystem` folder in VS Code.
+```bash
+git clone --recurse-submodules https://github.com/prakrati28/Nakamotos_LotterySystem.git
+cd Nakamotos_LotterySystem
+```
 
-### 2. Install dependencies
+> If you already cloned without `--recurse-submodules`, run:
+> ```bash
+> git submodule update --init --recursive
+> ```
 
-Frontend:
+### 2. Install Dependencies
+
+**Smart contracts (Foundry submodules):**
+
+```bash
+forge install
+```
+
+**Frontend:**
 
 ```bash
 cd lottery-frontend
 npm install
 ```
 
-Contracts:
+**Backend:**
 
 ```bash
-forge install
+cd backend
+npm install
 ```
 
-### 3. Configure environment variables
+### 3. Configure Environment Variables
 
-<!-- TODO: add environment variable instructions here -->
-<!-- TODO: list required frontend, server, and database variables -->
+#### Frontend (`lottery-frontend/.env`)
 
+```env
+NEXT_PUBLIC_CONTRACT_ADDRESS=<deployed-contract-address>
+NEXT_PUBLIC_CHAIN_ID=11155111
+NEXT_PUBLIC_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
+DATABASE_URL="file:./dev.db"
+```
 
-### 4. Compile
+#### Backend (`backend/.env`)
+
+```env
+PORT=4000
+OWNER_PRIVATE_KEY=<owner-wallet-private-key>
+RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
+CONTRACT_ADDRESS=<deployed-contract-address>
+DATABASE_URL="file:./dev.db"
+```
+
+#### Foundry (shell environment or `.env` at project root)
+
+```env
+OWNER_PRIVATE_KEY=<owner-wallet-private-key>
+RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
+```
+
+### 4. Set Up the Database (Prisma)
+
+**Frontend:**
+
+```bash
+cd lottery-frontend
+npx prisma generate
+npx prisma db push
+```
+
+**Backend:**
+
+```bash
+cd backend
+npx prisma generate
+npx prisma db push
+```
+
+---
+
+## Compile
+
+**Smart contracts:**
 
 ```bash
 forge build
 ```
 
-If you want to compile the frontend TypeScript app as well:
+**Frontend (TypeScript):**
 
 ```bash
 cd lottery-frontend
 npm run build
 ```
 
-### 5. Test
+---
 
-Contract tests:
+## Test
+
+**Run all 52 contract tests:**
 
 ```bash
 forge test
 ```
 
-If you want the specific test file used in this repo:
+**Run with verbose output on the specific test file:**
 
 ```bash
 forge test --match-path test/lotterytest.t.sol -vvv
 ```
 
-Frontend checks:
+**Run tests for the VRF variant:**
+
+```bash
+FOUNDRY_PROFILE=vrf forge test --match-path vrf/vrfchainlinkTest.t.sol -vvv
+```
+
+**Generate coverage report:**
+
+```bash
+forge coverage --match-path test/lotterytest.t.sol
+```
+
+**Generate gas report:**
+
+```bash
+forge test --match-path test/lotterytest.t.sol --gas-report
+```
+
+### Test Results Summary
+
+- **52 tests** — all passing
+- **Line coverage:** 100% (80/80)
+- **Statement coverage:** 100% (76/76)
+- **Branch coverage:** 90.38% (47/52)
+- **Function coverage:** 100% (11/11)
+
+---
+
+## Deploy
+
+### Deploy to Sepolia
+
+```bash
+forge script script/Deploy.s.sol:DeployLottery \
+  --rpc-url $RPC_URL \
+  --private-key $OWNER_PRIVATE_KEY \
+  --broadcast \
+  --verify
+```
+
+> **Note:** The deploy script sets the ticket price to `0.00000001 ether` (10 Gwei). To change it, edit the constructor argument in `script/Deploy.s.sol`.
+
+### Deploy to a Local Anvil Node
+
+**Terminal 1 — start Anvil:**
+
+```bash
+anvil
+```
+
+**Terminal 2 — deploy:**
+
+```bash
+forge script script/Deploy.s.sol:DeployLottery \
+  --rpc-url http://127.0.0.1:8545 \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  --broadcast
+```
+
+---
+
+## Run the Application
+
+### Frontend (Next.js)
 
 ```bash
 cd lottery-frontend
 npm run dev
 ```
 
-### 6. Deploy
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-<!-- TODO: add deployment command here -->
-<!-- TODO: mention whether deployment is via Foundry or Hardhat and which network -->
+### Backend (Express)
 
+```bash
+cd backend
+node server.js
+```
 
+The backend API starts on the port defined in your `.env` (default `4000`).
 
+---
 
 ## How to Verify the Website
 
-<!-- TODO: add end-to-end website verification steps here -->
-<!-- TODO: include wallet connection, buy ticket, and owner dashboard checks -->
+1. **Connect MetaMask** — switch to the Sepolia testnet and connect your wallet on the frontend.
+2. **Buy a ticket** — click "Buy Ticket" and confirm the transaction in MetaMask. The ticket count and prize pool should update.
+3. **Owner dashboard** (owner wallet only):
+   - **Close Sale** — stops ticket purchases for the current round.
+   - **Commit Hash** — submit `keccak256(secret)` and deposit collateral equal to the prize pool.
+   - **Reveal & Draw** — reveal the secret after 10 blocks to draw a winner.
+4. **Claim prize** — the drawn winner clicks "Claim Prize" to withdraw the entire prize pool.
+5. **Slash owner** — if the owner fails to reveal within 250 blocks, any user can trigger `slashOwner()` and then claim a proportional refund.
+6. **Start new round** — the owner starts the next round once the current one finishes.
 
-
+---
 
 ## Gas Optimisation
 
-<!-- TODO: describe the optimized function here -->
-<!-- TODO: add before/after gas numbers and why the change is efficient -->
+The `revealAndDraw` function was identified as the most computationally expensive function and was specifically targeted for optimisation.
 
+### Before vs After
 
+| Metric | `lottery.sol` (Before) | `gasOptimisedLottery.sol` (After) | Savings |
+|--------|------------------------|-----------------------------------|---------|
+| Min    | 24,517                 | 24,517                            | 0       |
+| Avg    | 44,121                 | 44,031                            | **90**  |
+| Median | 53,788                 | 53,635                            | **153** |
+| Max    | 53,788                 | 53,635                            | **153** |
+
+### Techniques Applied
+
+1. **`unchecked` block on modulo** — The Solidity 0.8+ compiler injects a zero-divisor check before every `%` operation. Since `totalParticipants > 0` is already guaranteed by the `closeSale()` phase guard, wrapping the modulo in `unchecked {}` eliminates the redundant safety opcodes.
+
+2. **Explicit memory caching** — State variables (`targetBlock`, `winner`, `prizePool`) are read from storage once into local stack variables, avoiding repeat warm SLOADs (100 gas each) and preventing stack-shuffling penalties introduced by the `unchecked` scope.
+
+---
+
+## Static Analysis (Slither)
+
+Slither reports are available in the `slither-reports/` directory:
+
+```bash
+# Run slither (requires slither-analyzer installed)
+slither src/lottery.sol
+slither src/gasOptimisedLottery.sol
+slither vrf/LotteryVRFChainlink.sol
+```
+
+---
 
 ## Known Issues / Limitations
 
-<!-- TODO: list any known issues or limitations here -->
+- **Blockhash window** — The EVM only stores the last 256 blockhashes. If the owner delays beyond `targetBlock + 250`, the blockhash returns `bytes32(0)` and the reveal reverts. The `slashOwner()` function handles this case.
+- **Single-winner model** — Each round produces exactly one winner who receives the entire prize pool. No partial or multi-winner distribution.
+- **No on-chain ticket cap** — There is no enforced maximum number of tickets per round; the owner must manage round sizes off-chain.
+- **VRF variant has no collateral** — The Chainlink VRF variant does not require owner collateral, since randomness is provided externally by the Chainlink oracle network.
 
+---
 
+## License
 
+MIT — see [`SPDX-License-Identifier`](https://spdx.org/licenses/MIT.html) headers in each `.sol` file.
