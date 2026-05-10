@@ -75,9 +75,8 @@ Nakamotos_LotterySystem/
 │   │   ├── hooks/                   # Custom React hooks
 │   │   ├── lib/                     # Utilities and contract config
 │   │   └── abi/                     # Contract ABI JSON
-│   ├── prisma/
-│   │   └── schema.prisma            # Prisma schema for round state
-│   └── README.md
+│   └── prisma/
+│       └── schema.prisma            # Prisma schema for round state
 ├── slither-reports/                 # Slither static analysis output
 ├── broadcast/                       # Foundry broadcast artifacts
 ├── foundry.toml                     # Foundry configuration
