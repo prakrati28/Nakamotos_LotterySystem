@@ -78,7 +78,8 @@ Nakamotos_LotterySystem/
 │   └── prisma/
 │       └── schema.prisma            # Prisma schema for round state
 ├── reports/                         # Analysis and audit reports
-│   └── analysis_report.md           # Fairness analysis report
+│   └── project_report.pdf           # Fairness analysis report
+│   └── analysis_report.pdf          # Fairness analysis report
 ├── slither-reports/                 # Slither static analysis output
 ├── broadcast/                       # Foundry broadcast artifacts
 ├── foundry.toml                     # Foundry configuration
@@ -86,20 +87,7 @@ Nakamotos_LotterySystem/
 └── README.md
 ```
 
----
 
-## Owner Slashing Fairness Analysis
-
-The **`reports/analysis_report.md`** provides a comprehensive analysis of the owner slashing mechanism to verify whether the owner is slashed fairly or unfairly. This report examines:
-
-- **Collateral allocation** — verification that the owner's collateral is properly distributed to slashed participants
-- **Refund calculations** — mathematical proof that refunds are proportional and equitable
-- **Edge cases** — boundary conditions and potential attack vectors
-- **Fairness guarantees** — formal analysis ensuring no participant receives more or less than their rightful share
-
-This document serves as an audit trail for the slashing logic and can be used to verify the system's integrity and fairness properties.
-
----
 
 ## Prerequisites
 
@@ -325,6 +313,19 @@ The `revealAndDraw` function was identified as the most computationally expensiv
 
 ---
 
+---
+
+## Owner Slashing Fairness Analysis
+
+The **`reports/analysis_report.md`** provides a comprehensive analysis of the owner slashing mechanism to verify whether the owner is slashed fairly or unfairly. This report examines:
+
+- **Edge cases** — boundary conditions and potential attack vectors
+- **Fairness guarantees** — formal analysis ensuring no participant receives more or less than their rightful share
+
+This document serves as an audit trail for the slashing logic and can be used to verify the system's integrity and fairness properties.
+
+---
+
 ## Static Analysis (Slither)
 
 Slither reports are available in the `slither-reports/` directory:
@@ -338,12 +339,10 @@ slither vrf/LotteryVRFChainlink.sol
 
 ---
 
-## Known Issues / Limitations
+## Limitations
 
-- **Blockhash window** — The EVM only stores the last 256 blockhashes. If the owner delays beyond `targetBlock + 250`, the blockhash returns `bytes32(0)` and the reveal reverts. The `slashOwner[...]
 - **Single-winner model** — Each round produces exactly one winner who receives the entire prize pool. No partial or multi-winner distribution.
 - **No on-chain ticket cap** — There is no enforced maximum number of tickets per round; the owner must manage round sizes off-chain.
-- **VRF variant has no collateral** — The Chainlink VRF variant does not require owner collateral, since randomness is provided externally by the Chainlink oracle network.
 
 ---
 
