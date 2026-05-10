@@ -1,4 +1,4 @@
-# Nakamoto's Lottery System
+# Project 4 — Lottery System with Commit-Reveal Randomness
 
 > On-chain commit-reveal lottery with a Next.js frontend, Foundry smart contracts, an Express backend, and owner workflows for managing rounds.
 
@@ -372,7 +372,7 @@ slither vrf/LotteryVRFChainlink.sol
 - **Blockhash window** — The EVM only stores the last 256 blockhashes. If the owner delays beyond `targetBlock + 250`, the blockhash returns `bytes32(0)` and the reveal reverts. The `slashOwner()` function handles this case.
 - **Single-winner model** — Each round produces exactly one winner who receives the entire prize pool. No partial or multi-winner distribution.
 - **No on-chain ticket cap** — There is no enforced maximum number of tickets per round; the owner must manage round sizes off-chain.
-- **VRF variant has no collateral** — The Chainlink VRF variant does not require owner collateral, since randomness is provided externally by the Chainlink oracle network.
+
 
 ---
 
