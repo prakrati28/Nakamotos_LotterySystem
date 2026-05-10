@@ -1,19 +1,19 @@
 # Nakamoto's Lottery System
 
-> On-chain commit-reveal lottery with a Next.js frontend, Foundry smart contracts, an Express backend, and owner workflows for managing rounds.
+> On-chain commit-reveal lottery with a Next.js frontend and backend, Foundry smart contracts, and owner workflows for managing rounds.
 
 ---
 
 ## Team Members
 
-| No. | Name             | Roll Number |
-|-----|------------------|-------------|
-| 1   | Alaya Dcruz      | 240001007   |
-| 2   | Anushka Krishan  | 240001012   |
-| 3   | Prakrati Pawar   | 240001053   |
-| 4   | Vanshika Gupta   | 240001076   |
-| 5   | Kartikey Raghav  | 240021008   |
-| 6   | Trijal Mathuria  | 240001073   |
+| No. | Name            | Roll Number |
+| --- | --------------- | ----------- |
+| 1   | Alaya Dcruz     | 240001007   |
+| 2   | Anushka Krishan | 240001012   |
+| 3   | Prakrati Pawar  | 240001053   |
+| 4   | Vanshika Gupta  | 240001076   |
+| 5   | Kartikey Raghav | 240021008   |
+| 6   | Trijal Mathuria | 240001073   |
 
 ---
 
@@ -27,16 +27,16 @@ A **Chainlink VRF v2.5** variant (`vrf/LotteryVRFChainlink.sol`) replaces the co
 
 ## Project Snapshot
 
-| Item            | Details                                  |
-|-----------------|------------------------------------------|
-| Project         | Project 4                                |
-| Contract Model  | Commit-Reveal Lottery (+ VRF variant)    |
-| Frontend        | Next.js 14 (App Router)                  |
-| Backend         | Express 5 + Prisma ORM                   |
-| Smart Contracts | Solidity 0.8.20 · Foundry (forge/cast)   |
-| Chain Target    | Ethereum Sepolia                         |
-| Security        | OpenZeppelin Ownable + ReentrancyGuard   |
-| Static Analysis | Slither                                  |
+| Item            | Details                                |
+| --------------- | -------------------------------------- |
+| Project         | Project 4                              |
+| Contract Model  | Commit-Reveal Lottery (+ VRF variant)  |
+| Frontend        | Next.js 14 (App Router)                |
+| Backend         | Next.js API Routes + Prisma ORM        |
+| Smart Contracts | Solidity 0.8.20 · Foundry (forge/cast) |
+| Chain Target    | Ethereum Sepolia                       |
+| Security        | OpenZeppelin Ownable + ReentrancyGuard |
+| Static Analysis | Slither                                |
 
 ---
 
@@ -75,34 +75,28 @@ Nakamotos_LotterySystem/
 │   │   ├── hooks/                   # Custom React hooks
 │   │   ├── lib/                     # Utilities and contract config
 │   │   └── abi/                     # Contract ABI JSON
-│   └── prisma/
-│       └── schema.prisma            # Prisma schema for round state
-├── backend/                         # Express API server
-│   ├── server.js                    # Entry point
-│   ├── routers/ownerRouter.js       # Owner action endpoints
-│   ├── lib/                         # Shared utilities
-│   ├── middlewares/                  # Express middleware
-│   └── prisma/
-│       └── schema.prisma            # Prisma schema
+│   ├── prisma/
+│   │   └── schema.prisma            # Prisma schema for round state
+│   └── README.md
 ├── slither-reports/                 # Slither static analysis output
 ├── broadcast/                       # Foundry broadcast artifacts
 ├── foundry.toml                     # Foundry configuration
 ├── remappings.txt                   # Solidity import remappings
-└── README.md                       
+└── README.md
 ```
 
 ---
 
 ## Prerequisites
 
-| Tool             | Version    | Purpose                          |
-|------------------|------------|----------------------------------|
-| **Node.js**      | 18+ / 20+ | Frontend & backend runtime       |
-| **npm**          | 9+         | Package manager                  |
-| **Foundry**      | Latest     | `forge`, `cast`, `anvil`         |
-| **MetaMask**     | Latest     | Browser wallet for Sepolia       |
-| **Sepolia ETH**  | —          | Testnet gas for transactions     |
-| **Sepolia RPC**  | —          | e.g. Alchemy / Infura endpoint   |
+| Tool            | Version   | Purpose                        |
+| --------------- | --------- | ------------------------------ |
+| **Node.js**     | 18+ / 20+ | Frontend & backend runtime     |
+| **npm**         | 9+        | Package manager                |
+| **Foundry**     | Latest    | `forge`, `cast`, `anvil`       |
+| **MetaMask**    | Latest    | Browser wallet for Sepolia     |
+| **Sepolia ETH** | —         | Testnet gas for transactions   |
+| **Sepolia RPC** | —         | e.g. Alchemy / Infura endpoint |
 
 Install Foundry (if not already):
 
@@ -123,6 +117,7 @@ cd Nakamotos_LotterySystem
 ```
 
 > If you already cloned without `--recurse-submodules`, run:
+>
 > ```bash
 > git submodule update --init --recursive
 > ```
@@ -142,32 +137,21 @@ cd lottery-frontend
 npm install
 ```
 
-**Backend:**
-
-```bash
-cd backend
-npm install
-```
-
 ### 3. Configure Environment Variables
 
 #### Frontend (`lottery-frontend/.env`)
 
 ```env
-NEXT_PUBLIC_CONTRACT_ADDRESS=<deployed-contract-address>
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xYourContractAddress
 NEXT_PUBLIC_CHAIN_ID=11155111
-NEXT_PUBLIC_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
-DATABASE_URL="file:./dev.db"
-```
-
-#### Backend (`backend/.env`)
-
-```env
-PORT=4000
-OWNER_PRIVATE_KEY=<owner-wallet-private-key>
-RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
-CONTRACT_ADDRESS=<deployed-contract-address>
-DATABASE_URL="file:./dev.db"
+NEXT_PUBLIC_CHAIN_NAME=Sepolia
+NEXT_PUBLIC_ETHERSCAN_BASE_URL=https://sepolia.etherscan.io
+NEXT_PUBLIC_TICKET_PRICE_ETH=0.00000001
+RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
+OWNER_PRIVATE_KEY=0xYourPrivateKey
+OWNER_API_KEY=some-long-random-secret-string
+DATABASE_URL=postgresql://user:password@localhost:5432/lottochain
+DEFAULT_COLLATERAL_ETH=0.1
 ```
 
 #### Foundry (shell environment or `.env` at project root)
@@ -183,14 +167,6 @@ RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
 
 ```bash
 cd lottery-frontend
-npx prisma generate
-npx prisma db push
-```
-
-**Backend:**
-
-```bash
-cd backend
 npx prisma generate
 npx prisma db push
 ```
@@ -300,17 +276,6 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Backend (Express)
-
-```bash
-cd backend
-node server.js
-```
-
-The backend API starts on the port defined in your `.env` (default `4000`).
-
----
-
 ## How to Verify the Website
 
 1. **Connect MetaMask** — switch to the Sepolia testnet and connect your wallet on the frontend.
@@ -332,7 +297,7 @@ The `revealAndDraw` function was identified as the most computationally expensiv
 ### Before vs After
 
 | Metric | `lottery.sol` (Before) | `gasOptimisedLottery.sol` (After) | Savings |
-|--------|------------------------|-----------------------------------|---------|
+| ------ | ---------------------- | --------------------------------- | ------- |
 | Min    | 24,517                 | 24,517                            | 0       |
 | Avg    | 44,121                 | 44,031                            | **90**  |
 | Median | 53,788                 | 53,635                            | **153** |
