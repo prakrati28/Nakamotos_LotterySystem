@@ -43,7 +43,6 @@ export default function LotteryApp() {
           </div>
         )}
 
-        {/* Hero */}
         <div className="mb-12 animate-fade-in">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-lborder bg-lcard px-2 md:px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-lsubtle">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
@@ -61,7 +60,6 @@ export default function LotteryApp() {
           </p>
         </div>
 
-        {/* Grid */}
         <div className="grid grid-cols-1 gap-3 md:gap-6 lg:grid-cols-3">
           <div className="space-y-3 md:space-y-6 lg:col-span-2">
             <LotteryStatus

@@ -12,7 +12,6 @@ export default function ConnectPrompt({ wallet }: ConnectPromptProps) {
 
   return (
     <div className="animate-slide-up-d1 flex flex-col items-center justify-center rounded-2xl border border-dashed border-lborder bg-lsurface px-8 py-14 text-center">
-      {/* Icon */}
       <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-lborder bg-lcard shadow-lcard">
         <Wallet className="h-6 w-6 text-lsubtle" />
       </div>
@@ -25,7 +24,6 @@ export default function ConnectPrompt({ wallet }: ConnectPromptProps) {
         claim prizes.
       </p>
 
-      {/* Primary: Connect (returns last-used account silently) */}
       <button
         onClick={connect}
         disabled={isConnecting || isSwitchingAccount}
@@ -40,7 +38,6 @@ export default function ConnectPrompt({ wallet }: ConnectPromptProps) {
         )}
       </button>
 
-      {/* Secondary: force MetaMask account picker */}
       <button
         onClick={switchAccount}
         disabled={isConnecting || isSwitchingAccount}

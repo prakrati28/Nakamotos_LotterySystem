@@ -25,7 +25,6 @@ export default function ApiKeyGate({
   return (
     <div className="flex min-h-screen items-center justify-center bg-lbg px-6">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-lborder bg-lcard">
             <ShieldCheck className="h-7 w-7 text-laccent" />
@@ -38,7 +37,6 @@ export default function ApiKeyGate({
           </p>
         </div>
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-lborder bg-lsurface p-6 shadow-lpanel"
@@ -76,14 +74,6 @@ export default function ApiKeyGate({
           >
             Access Dashboard
           </button>
-
-          {/* <p className="mt-4 text-center text-[11px] text-ldim">
-            The key is stored in localStorage and sent as{" "}
-            <code className="rounded bg-lghost px-1 font-mono text-[10px]">
-              x-owner-key
-            </code>{" "}
-            header on all API requests.
-          </p> */}
         </form>
       </div>
     </div>

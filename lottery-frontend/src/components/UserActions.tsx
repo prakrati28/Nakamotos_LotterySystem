@@ -191,7 +191,6 @@ export default function UserActions({
       </div>
 
       <div className="space-y-4 p-2 md:p-6">
-        {/* Winner banner */}
         {isWinner && !roundState?.prizeClaimed && (
           <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/8 p-2 md:p-4">
             <div className="flex items-center gap-2 text-yellow-300">
@@ -210,7 +209,6 @@ export default function UserActions({
           </div>
         )}
 
-        {/* Slashed notice */}
         {isSlashed && (
           <div className="rounded-xl border border-red-500/20 bg-red-500/6 p-2 md:p-4">
             <p className="font-semibold text-red-300">Round was slashed</p>
@@ -221,7 +219,6 @@ export default function UserActions({
           </div>
         )}
 
-        {/* Buy Ticket */}
         <div className="rounded-xl border border-lborder bg-lcard p-2.5 md:p-5">
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -273,7 +270,6 @@ export default function UserActions({
           )}
         </div>
 
-        {/* Claim Prize */}
         <div
           className={`rounded-xl border p-2.5 md:p-5 transition-all ${canClaim ? "border-yellow-500/30 bg-yellow-500/6" : "border-lborder bg-lcard opacity-60"}`}
         >
@@ -308,7 +304,6 @@ export default function UserActions({
           )}
         </div>
 
-        {/* Claim Refund */}
         {(isSlashed || canRefund) && (
           <div
             className={`rounded-xl border p-2.5 md:p-5 transition-all ${canRefund ? "border-red-500/25 bg-red-500/6" : "border-lborder bg-lcard opacity-60"}`}
@@ -339,7 +334,6 @@ export default function UserActions({
           </div>
         )}
 
-        {/* Slash Owner */}
         {canSlash && (
           <div className="rounded-xl border border-orange-500/25 bg-orange-500/6 p-2.5 md:p-5">
             <div className="mb-2.5 flex items-center gap-2">

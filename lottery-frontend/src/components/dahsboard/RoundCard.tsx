@@ -155,7 +155,6 @@ export default function RoundCard({
         isCurrentRound ? "border-laccent/25 shadow-lglow" : "border-lborder"
       }`}
     >
-      {/* Card Header */}
       <div
         className="flex cursor-pointer items-center gap-4 px-3 md:px-6 py-4"
         onClick={() => setExpanded((e) => !e)}
@@ -192,10 +191,8 @@ export default function RoundCard({
         )}
       </div>
 
-      {/* Expanded Body */}
       {expanded && (
         <div className="border-t border-lborder">
-          {/* Info grid */}
           <div className="grid grid-cols-2 gap-px border-b border-lborder bg-lborder md:grid-cols-4">
             {[
               { label: "Phase", value: phaseLabel },
@@ -225,7 +222,6 @@ export default function RoundCard({
             ))}
           </div>
 
-          {/* Committed hash */}
           {round.committedHash && (
             <div className="border-b border-lborder px-3 md:px-6 py-3.5">
               <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-ldim">
@@ -240,7 +236,6 @@ export default function RoundCard({
             </div>
           )}
 
-          {/* Tx links */}
           {(round.closeSaleTxHash ||
             round.commitTxHash ||
             round.revealTxHash) && (
@@ -278,7 +273,6 @@ export default function RoundCard({
             </div>
           )}
 
-          {/* Owner Actions */}
           {isCurrentRound && (
             <div className="space-y-4 p-3 md:p-6">
               <p className="text-xs font-semibold uppercase tracking-widest text-ldim">
@@ -287,7 +281,6 @@ export default function RoundCard({
 
               <div className="rounded-xl border border-lborder bg-lcard p-2 md:p-4">
                 <div className="flex flex-wrap gap-4">
-                  {/* Step 1: Close Sale */}
                   <div
                     className={`flex-1 min-w-[200px] rounded-xl border p-2 md:p-4 ${canClose ? "border-orange-500/20 bg-orange-500/5" : "border-lborder opacity-50"}`}
                   >
@@ -313,7 +306,6 @@ export default function RoundCard({
                     />
                   </div>
 
-                  {/* Step 2: Generate Secret */}
                   <div
                     className={`flex-1 min-w-[200px] rounded-xl border p-2 md:p-4 ${canSecret ? "border-yellow-500/20 bg-yellow-500/5" : "border-lborder opacity-50"}`}
                   >
@@ -344,7 +336,6 @@ export default function RoundCard({
                     />
                   </div>
 
-                  {/* Step 3: Commit Hash */}
                   <div
                     className={`flex-1 min-w-[200px] rounded-xl border p-2 md:p-4 ${canCommit ? "border-laccent/20 bg-laccent/5" : "border-lborder opacity-50"}`}
                   >
@@ -387,7 +378,6 @@ export default function RoundCard({
                     />
                   </div>
 
-                  {/* Step 4: Reveal & Draw */}
                   <div
                     className={`flex-1 min-w-[200px] rounded-xl border p-2 md:p-4 ${canReveal ? "border-emerald-500/20 bg-emerald-500/5" : "border-lborder opacity-50"}`}
                   >
@@ -422,7 +412,6 @@ export default function RoundCard({
             </div>
           )}
 
-          {/* Audit Log */}
           {round.userlog.length > 0 && (
             <div className="border-t border-lborder px-3 md:px-6 py-3 md:py-6">
               <AuditLog logs={round.userlog} />

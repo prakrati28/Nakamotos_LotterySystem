@@ -40,7 +40,6 @@ const steps = [
 export default function InfoSidebar({ roundState }: InfoSidebarProps) {
   return (
     <aside className="space-y-4">
-      {/* How It Works */}
       <div className="animate-slide-up-d1 rounded-2xl border border-lborder bg-lsurface shadow-lcard">
         <div className="flex items-center gap-3 border-b border-lborder px-2.5 md:px-5 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
@@ -65,7 +64,6 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
         </ol>
       </div>
 
-      {/* Contract Info */}
       <div className="animate-slide-up-d2 rounded-2xl border border-lborder bg-lsurface shadow-lcard">
         <div className="flex items-center gap-3 border-b border-lborder px-2.5 md:px-5 py-4">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-laccent/12 ring-1 ring-laccent/20">
@@ -127,7 +125,6 @@ export default function InfoSidebar({ roundState }: InfoSidebarProps) {
         </div>
       </div>
 
-      {/* Security note */}
       <div className="animate-slide-up-d3 rounded-xl border border-lborder bg-lcard px-2.5 md:px-5 py-2 md:py-4">
         <p className="text-sm leading-relaxed text-ldim">
           <span className="font-semibold text-lsubtle">Commit-reveal</span>{" "}

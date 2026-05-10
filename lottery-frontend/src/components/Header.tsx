@@ -137,7 +137,6 @@ export default function Header({ wallet }: HeaderProps) {
     <>
       <header className="sticky top-0 z-50 border-b border-lborder/60 bg-lbg/85 backdrop-blur-xl">
         <div className="mx-auto flex flex-col md:flex-row gap-2 max-w-7xl items-center justify-between px-6 py-4 md:py-2">
-          {/* Logo */}
           <div className="flex items-center gap-3 self-start">
             <div className="relative flex h-9 w-9 items-center justify-center">
               <svg viewBox="0 0 32 32" fill="none" className="h-9 w-9">
@@ -164,7 +163,6 @@ export default function Header({ wallet }: HeaderProps) {
             </div>
           </div>
 
-          {/* Right side */}
           <div className="flex items-center gap-3 self-end">
             {isConnected && (
               <button
@@ -228,7 +226,6 @@ export default function Header({ wallet }: HeaderProps) {
         </div>
       </header>
 
-      {/* Wrong network banner */}
       {isConnected && !isCorrectNetwork && (
         <div className="border-b border-orange-500/20 bg-orange-500/8 px-6 py-3">
           <div className="mx-auto flex max-w-7xl items-center justify-between">

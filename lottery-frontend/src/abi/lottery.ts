@@ -1,21 +1,9 @@
-/**
- * Full ABI from Lottery.json (Foundry artifact).
- * Used by both the browser (read-only) and Next.js API routes (server-side writes).
- *
- * Key contract design:
- * - All state is per-round: phase(roundId), prizePool(roundId), winner(roundId)
- * - commitHash() is payable — owner posts collateral bond
- * - revealAndDraw() must be called after targetBlock, before targetBlock+250
- * - If owner misses the window, anyone calls slashOwner() to confiscate collateral
- * - claimPrize(roundId) and claimRefund(roundId) both take a roundId
- */
 export const LOTTERY_ABI = [
   {
     type: "constructor",
     inputs: [{ name: "_ticketPrice", type: "uint256" }],
     stateMutability: "nonpayable",
   },
-  // View
   {
     name: "owner",
     type: "function",
@@ -113,7 +101,6 @@ export const LOTTERY_ABI = [
     ],
     outputs: [{ name: "", type: "address" }],
   },
-  // User writes
   {
     name: "buyTicket",
     type: "function",
@@ -142,7 +129,6 @@ export const LOTTERY_ABI = [
     inputs: [],
     outputs: [],
   },
-  // Owner writes (called server-side)
   {
     name: "closeSale",
     type: "function",
@@ -178,7 +164,6 @@ export const LOTTERY_ABI = [
     inputs: [{ name: "newOwner", type: "address" }],
     outputs: [],
   },
-  // Events
   {
     name: "HashCommitted",
     type: "event",
