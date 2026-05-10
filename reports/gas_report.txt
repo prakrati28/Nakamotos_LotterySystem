@@ -1,0 +1,210 @@
+[⠊] Compiling...
+[⠒] Compiling 28 files with Solc 0.8.33
+[⠢] Solc 0.8.33 finished in 1.03s
+Compiler run successful!
+Analysing contracts...
+Running tests...
+
+Ran 52 tests for test/lotterytest.t.sol:LotteryTest
+[PASS] test_BuyTicket_MultipleParticipants() (gas: 235320)
+[PASS] test_BuyTicket_RevertsAfterSaleClosed() (gas: 151657)
+[PASS] test_BuyTicket_RevertsInCommittedPhase() (gas: 287095)
+[PASS] test_BuyTicket_RevertsInDrawnPhase() (gas: 286263)
+[PASS] test_BuyTicket_RevertsOnWrongPrice_TooHigh() (gas: 24977)
+[PASS] test_BuyTicket_RevertsOnWrongPrice_TooLow() (gas: 24933)
+[PASS] test_BuyTicket_SameAddressMultipleTimes() (gas: 153559)
+[PASS] test_BuyTicket_Success() (gas: 121774)
+[PASS] test_ClaimPrize_RevertsForNonWinner() (gas: 284304)
+[PASS] test_ClaimPrize_RevertsIfNotDrawnPhase() (gas: 285173)
+[PASS] test_ClaimPrize_RevertsOnDoubleClaim() (gas: 277048)
+[PASS] test_ClaimPrize_WinnerReceivesPrize() (gas: 276147)
+[PASS] test_ClaimRefund_RevertsIfNoTickets() (gas: 236649)
+[PASS] test_ClaimRefund_RevertsIfNotSlashed() (gas: 285149)
+[PASS] test_ClaimRefund_RevertsOnDoubleRefund() (gas: 226108)
+[PASS] test_ClaimRefund_Success() (gas: 278980)
+[PASS] test_CloseSale_RevertsIfAlreadyClosed() (gas: 142661)
+[PASS] test_CloseSale_RevertsIfNoParticipants() (gas: 17801)
+[PASS] test_CloseSale_RevertsIfNotOwner() (gas: 119464)
+[PASS] test_CloseSale_Success() (gas: 142323)
+[PASS] test_CommitHash_RevertsIfNotOwner() (gas: 149579)
+[PASS] test_CommitHash_RevertsIfSaleNotClosed() (gas: 126568)
+[PASS] test_CommitHash_RevertsOnZeroHash() (gas: 149735)
+[PASS] test_CommitHash_RevertsWithNoCollateral() (gas: 143208)
+[PASS] test_CommitHash_Success() (gas: 223297)
+[PASS] test_Constructor_FirstRoundIsOpen() (gas: 12035)
+[PASS] test_Constructor_RevertsOnZeroTicketPrice() (gas: 85876)
+[PASS] test_Constructor_SetsTicketPrice() (gas: 7961)
+[PASS] test_GetParticipant_CorrectAddress() (gas: 179192)
+[PASS] test_GetParticipant_RevertsOnOutOfBounds() (gas: 118139)
+[PASS] test_MultiRound_RevertsIfCurrentRoundNotFinished() (gas: 119929)
+[PASS] test_MultiRound_RevertsIfRoundOpen() (gas: 16016)
+[PASS] test_MultiRound_StartNewRoundAfterDrawn() (gas: 286501)
+[PASS] test_MultiRound_StartNewRoundAfterSlashed() (gas: 294271)
+[PASS] test_MultiRound_StartNewRoundNotOwner() (gas: 275869)
+[PASS] test_MultiRound_StateIsolation() (gas: 396580)
+[PASS] test_PrizePool_ExactlyEqualsTicketPayments() (gas: 267779)
+[PASS] test_PrizePool_FuzzTicketCount(uint8) (runs: 256, μ: 404389, ~: 298364)
+[PASS] test_PrizePool_SingleTicket() (gas: 117027)
+[PASS] test_RevealAndDraw_CollateralReturnedToOwner() (gas: 277918)
+[PASS] test_RevealAndDraw_RevertsAfterBlockhashExpiry() (gas: 282428)
+[PASS] test_RevealAndDraw_RevertsBeforeTargetBlock() (gas: 282115)
+[PASS] test_RevealAndDraw_RevertsIfNotCommitted() (gas: 120091)
+[PASS] test_RevealAndDraw_RevertsIfNotOwner() (gas: 282068)
+[PASS] test_RevealAndDraw_RevertsOnEmptySecret() (gas: 282600)
+[PASS] test_RevealAndDraw_RevertsOnSecondCall() (gas: 276560)
+[PASS] test_RevealAndDraw_RevertsOnWrongSecret() (gas: 282890)
+[PASS] test_RevealAndDraw_Success() (gas: 277433)
+[PASS] test_SlashOwner_RevertsBeforeDeadline() (gas: 281516)
+[PASS] test_SlashOwner_RevertsIfNotCommitted() (gas: 117176)
+[PASS] test_SlashOwner_Success() (gas: 284076)
+[PASS] test_TotalTickets_ReturnsZeroForNewRound() (gas: 8553)
+Suite result: ok. 52 passed; 0 failed; 0 skipped; finished in 167.31ms (583.70ms CPU time)
+
+Ran 1 test suite in 174.50ms (167.31ms CPU time): 52 tests passed, 0 failed, 0 skipped (52 total tests)
+
+
+GAS REPORT
+-------------------------------------------------------------------------
+
+  forge test --match-path test/lotterytest.t.sol --gas-report   
+    --contracts src/lottery.sol 2>&1 | grep -A 30 "Function Name"
+| Function Name                                | Min             | Avg   | Median | Max    | # Calls |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| buyTicket                                    | 26006           | 90968 | 84865  | 119065 | 1628    |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| claimPrize                                   | 29666           | 33757 | 30051  | 39606  | 5       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| claimRefund                                  | 29644           | 35970 | 31869  | 43234  | 5       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| closeSale                                    | 23836           | 49534 | 51663  | 51663  | 34      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| commitHash                                   | 24537           | 92045 | 102236 | 102236 | 29      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| committedHash                                | 2841            | 2841  | 2841   | 2841   | 1       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| currentRound                                 | 2470            | 2470  | 2470   | 2470   | 28      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| getParticipant                               | 3156            | 4920  | 5509   | 5509   | 4       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| lockedCollateral                             | 2864            | 2864  | 2864   | 2864   | 2       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| phase                                        | 3022            | 3022  | 3022   | 3022   | 8       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| prizeClaimed                                 | 2910            | 2910  | 2910   | 2910   | 1       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| prizePool                                    | 2886            | 2886  | 2886   | 2886   | 265     |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| revealAndDraw                                | 24517           | 44121 | 53788  | 53788  | 17      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| slashOwner                                   | 25967           | 30891 | 32395  | 32395  | 7       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| startNewRound                                | 23815           | 31093 | 31844  | 35371  | 6       |
+
+
+  forge test --match-path test/lotterytest.t.sol --gas-report 
+      --contracts src/gasOptimisedLottery.sol 2>&1 | grep -A 30 "Function Name"   
+| Function Name                                | Min             | Avg   | Median | Max    | # Calls |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| buyTicket                                    | 26006           | 91113 | 84865  | 119065 | 1590    |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| claimPrize                                   | 29666           | 33757 | 30051  | 39606  | 5       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| claimRefund                                  | 29644           | 35970 | 31869  | 43234  | 5       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| closeSale                                    | 23836           | 49534 | 51663  | 51663  | 34      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| commitHash                                   | 24537           | 92045 | 102236 | 102236 | 29      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| committedHash                                | 2841            | 2841  | 2841   | 2841   | 1       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| currentRound                                 | 2470            | 2470  | 2470   | 2470   | 28      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| getParticipant                               | 3156            | 4920  | 5509   | 5509   | 4       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| lockedCollateral                             | 2864            | 2864  | 2864   | 2864   | 2       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| phase                                        | 3022            | 3022  | 3022   | 3022   | 8       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| prizeClaimed                                 | 2910            | 2910  | 2910   | 2910   | 1       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| prizePool                                    | 2886            | 2886  | 2886   | 2886   | 265     |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| revealAndDraw                                | 24517           | 44031 | 53635  | 53635  | 17      |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| slashOwner                                   | 25967           | 30891 | 32395  | 32395  | 7       |
+|----------------------------------------------+-----------------+-------+--------+--------+---------|
+| startNewRound                                | 23815           | 31093 | 31844  | 35371  | 6       |
+
+
+
+1. Identifying the Most Expensive Function
+While `buyTicket` and `commitHash` have the highest raw maximum gas costs
+due to expensive storage writing operations (SSTORE), the function
+specifically targeted for optimization is `revealAndDraw`. It is a
+computationally heavy function containing complex keccak256 hashing,
+blockhash lookups, and multiple state reads.
+
+2. Before and After Gas Numbers
+Based on the Foundry gas-report logs, the metrics for the `revealAndDraw`
+function show a distinct reduction in gas consumption after applying the
+optimizations.
+
+- Before Optimization (lottery.sol): 
+  Min: 24,517 | Avg: 44,121 | Median: 53,788 | Max: 53,788
+
+- After Optimization (gasOptimisedLottery.sol): 
+  Min: 24,517 | Avg: 44,031 | Median: 53,635 | Max: 53,635
+
+Total Savings: The optimizations successfully reduced the maximum execution
+cost by 153 gas and the average cost by 90 gas per call.
+
+3. Why Optimization Was Needed
+In the Ethereum Virtual Machine (EVM), interacting with state variables
+stored on the blockchain (SLOAD operations) is highly expensive.
+
+- A "cold" read (first access in a transaction) costs 2,100 gas.
+- A "warm" read (subsequent access in the same transaction) costs 100 gas.
+- Reading a variable from local memory or the stack costs roughly ~3 gas.
+
+Additionally, Solidity 0.8.0+ introduces built-in safety checks for math
+operations, including a zero-divisor check (ISZERO, PUSH, JUMPI opcodes)
+that executes before every division or modulo operation, adding unnecessary
+gas overhead if the divisor is already known to be non-zero.
+
+4. How It Was Optimized
+The gas reduction of 153 gas was achieved by combining two distinct
+optimization strategies:
+
+A. Removing Redundant Math Checks (`unchecked` block)
+In the original contract, calculating the winner index used a standard
+modulo operation (% totalParticipants). Because Solidity cannot look across
+different functions to prove that totalParticipants is greater than zero
+at this exact moment, it injects a safety check to prevent dividing by zero.
+However, the contract's phase architecture guarantees totalParticipants > 0
+because the closeSale() function explicitly requires it before the lottery
+can ever reach the Committed or Drawn phases.
+
+* The Fix: By wrapping the modulo operation in an `unchecked { }` block,
+  we explicitly instruct the compiler to drop the zero-divisor check,
+  saving the overhead of those opcodes.
+
+B. Explicit Memory Caching (Preventing Stack Shuffling Penalties)
+When complex block scopes (like the unchecked block) are introduced, the
+Solidity compiler's optimizer can lose track of storage pointers, forcing
+it to fall back to expensive "warm" SLOAD reads and triggering
+stack-shuffling operations (SWAP, DUP).
+
+* The Fix: To secure the gas savings from the unchecked block, explicit
+  memory caching was implemented. State variables were read from storage
+  exactly once, saved to local memory, and referenced locally thereafter:
+  
+  - Caching targetBlock: Stored as _targetBlock to validate require
+    statements and fetch the futureBlockHash.
+  
+  - Caching winner: Stored locally as _winner to be passed into the
+    WinnerDrawn event without re-reading from storage.
+  
+  - Caching prizePool: Read into _prizePool prior to the external call
+    and event emission.
+
+-------------------------------------------------------------------------
