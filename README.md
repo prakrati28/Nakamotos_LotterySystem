@@ -66,6 +66,12 @@ Nakamotos_LotterySystem/
 │   ├── lotterytest.t.sol            # 52-test Foundry test suite
 │   ├── coverage_report.txt          # 100% line/statement/function coverage
 │   └── gas_report.txt               # Forge gas report + optimisation analysis
+├── report/
+│   ├── project_report.pdf            # an overall project report
+│   ├── analysis_report.pdf          # a thorough analysis of owner slashing
+│   └── coverage_report.txt             
+│   ├── gas_optimize.pdf          # a short explanation of the gas optimisation
+│   └── gas_report.txt              
 ├── script/
 │   └── Deploy.s.sol                 # Foundry deployment script
 ├── lottery-frontend/                # Next.js 14 frontend (App Router)
