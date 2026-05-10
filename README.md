@@ -68,7 +68,7 @@ Nakamotos_LotterySystem/
 │   └── gas_report.txt               # Forge gas report + optimisation analysis
 ├── script/
 │   └── Deploy.s.sol                 # Foundry deployment script
-├── lottery-frontend/                # Next.js 14 frontend (App Router)
+├── lottery-frontend/                # Next.js 14 frontend (App Router) and backend (API Routes)
 │   ├── src/
 │   │   ├── app/                     # Pages and API routes
 │   │   ├── components/              # React components
@@ -129,7 +129,7 @@ cd Nakamotos_LotterySystem
 forge install
 ```
 
-**Frontend:**
+**Web App:**
 
 ```bash
 cd lottery-frontend
@@ -162,7 +162,7 @@ RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
 
 ### 4. Set Up the Database (Prisma)
 
-**Frontend:**
+**Web App:**
 
 ```bash
 cd lottery-frontend
@@ -180,7 +180,7 @@ npx prisma db push
 forge build
 ```
 
-**Frontend (TypeScript):**
+**Web App (TypeScript):**
 
 ```bash
 cd lottery-frontend
@@ -266,7 +266,7 @@ forge script script/Deploy.s.sol:DeployLottery \
 
 ## Run the Application
 
-### Frontend (Next.js)
+### Web App (Next.js)
 
 ```bash
 cd lottery-frontend
