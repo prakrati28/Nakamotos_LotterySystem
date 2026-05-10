@@ -62,7 +62,7 @@ contract LotteryTest is Test {
         _buyTicket(bob);
 
         lottery.closeSale();
-        lottery.commitHash{value: COLLATERAL}(COMMIT_HASH);
+        lottery.commitHash{value: lottery.prizePool(lottery.currentRound())}(COMMIT_HASH);
     }
 
     /// Full lifecycle up to Phase.Drawn for the current round.
@@ -186,11 +186,12 @@ contract LotteryTest is Test {
     function test_CommitHash_Success() public {
         _buyTicket(alice);
         lottery.closeSale();
-        lottery.commitHash{value: COLLATERAL}(COMMIT_HASH);
+        uint256 expectedCollateral = lottery.prizePool(1);
+        lottery.commitHash{value: expectedCollateral}(COMMIT_HASH);
 
         assertEq(lottery.committedHash(1), COMMIT_HASH);
         assertEq(uint8(lottery.phase(1)), uint8(Lottery.Phase.Committed));
-        assertEq(lottery.lockedCollateral(1), COLLATERAL);
+        assertEq(lottery.lockedCollateral(1), expectedCollateral);
     }
 
     function test_CommitHash_RevertsIfNotOwner() public {
@@ -221,7 +222,7 @@ contract LotteryTest is Test {
         _buyTicket(alice);
         lottery.closeSale();
 
-        vm.expectRevert("Lottery: must deposit collateral");
+        vm.expectRevert("Lottery: collateral must match the prize pool");
         lottery.commitHash{value: 0}(COMMIT_HASH);
     }
 
@@ -467,7 +468,8 @@ contract LotteryTest is Test {
         _buyTicket(bob);
 
         lottery.closeSale();
-        lottery.commitHash{value: COLLATERAL}(COMMIT_HASH);
+        uint256 collateral = lottery.prizePool(roundId);
+        lottery.commitHash{value: collateral}(COMMIT_HASH);
 
         uint256 target = lottery.targetBlock(roundId);
         vm.roll(target + 251);
@@ -480,8 +482,8 @@ contract LotteryTest is Test {
         lottery.claimRefund(roundId);
 
         // Alice had 1 ticket out of 2 participants → gets half the total pot
-        // Total pot = 2 * TICKET_PRICE + COLLATERAL
-        uint256 totalFunds    = 2 * TICKET_PRICE + COLLATERAL;
+        // Total pot = 2 * TICKET_PRICE + collateral
+        uint256 totalFunds    = 2 * TICKET_PRICE + collateral;
         uint256 expectedRefund = totalFunds / 2;
 
         assertEq(alice.balance, aliceBalBefore + expectedRefund);
@@ -501,7 +503,7 @@ contract LotteryTest is Test {
         _buyTicket(alice);
 
         lottery.closeSale();
-        lottery.commitHash{value: COLLATERAL}(COMMIT_HASH);
+        lottery.commitHash{value: lottery.prizePool(roundId)}(COMMIT_HASH);
 
         uint256 target = lottery.targetBlock(roundId);
         vm.roll(target + 251);
@@ -520,7 +522,7 @@ contract LotteryTest is Test {
         _buyTicket(alice);
 
         lottery.closeSale();
-        lottery.commitHash{value: COLLATERAL}(COMMIT_HASH);
+        lottery.commitHash{value: lottery.prizePool(roundId)}(COMMIT_HASH);
 
         uint256 target = lottery.targetBlock(roundId);
         vm.roll(target + 251);
