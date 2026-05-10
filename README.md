@@ -19,7 +19,7 @@
 
 ## Overview
 
-Nakamoto's Lottery System is a multi-round, commit-reveal on-chain lottery deployed on the Ethereum Sepolia testnet. The owner commits a hashed secret, locks collateral equal to the prize pool, and later reveals the secret to deterministically draw a winner using `keccak256(secret, blockhash, participantCount)`. If the owner withholds the reveal, anyone can slash the owner and participants claim proportional refunds (including the owner's collateral).
+Nakamoto's Lottery System is a multi-round, commit-reveal on-chain lottery deployed on the Ethereum Sepolia testnet. The owner commits a hashed secret, locks collateral equal to the prize pool, an[...]
 
 A **Chainlink VRF v2.5** variant (`vrf/LotteryVRFChainlink.sol`) replaces the commit-reveal flow with verifiable on-chain randomness.
 
@@ -77,12 +77,27 @@ Nakamotos_LotterySystem/
 │   │   └── abi/                     # Contract ABI JSON
 │   └── prisma/
 │       └── schema.prisma            # Prisma schema for round state
+├── reports/                         # Analysis and audit reports
+│   └── analysis_report.md           # Fairness analysis report
 ├── slither-reports/                 # Slither static analysis output
 ├── broadcast/                       # Foundry broadcast artifacts
 ├── foundry.toml                     # Foundry configuration
 ├── remappings.txt                   # Solidity import remappings
 └── README.md
 ```
+
+---
+
+## Owner Slashing Fairness Analysis
+
+The **`reports/analysis_report.md`** provides a comprehensive analysis of the owner slashing mechanism to verify whether the owner is slashed fairly or unfairly. This report examines:
+
+- **Collateral allocation** — verification that the owner's collateral is properly distributed to slashed participants
+- **Refund calculations** — mathematical proof that refunds are proportional and equitable
+- **Edge cases** — boundary conditions and potential attack vectors
+- **Fairness guarantees** — formal analysis ensuring no participant receives more or less than their rightful share
+
+This document serves as an audit trail for the slashing logic and can be used to verify the system's integrity and fairness properties.
 
 ---
 
@@ -304,9 +319,9 @@ The `revealAndDraw` function was identified as the most computationally expensiv
 
 ### Techniques Applied
 
-1. **`unchecked` block on modulo** — The Solidity 0.8+ compiler injects a zero-divisor check before every `%` operation. Since `totalParticipants > 0` is already guaranteed by the `closeSale()` phase guard, wrapping the modulo in `unchecked {}` eliminates the redundant safety opcodes.
+1. **`unchecked` block on modulo** — The Solidity 0.8+ compiler injects a zero-divisor check before every `%` operation. Since `totalParticipants > 0` is already guaranteed by the `closeSale()`[...]
 
-2. **Explicit memory caching** — State variables (`targetBlock`, `winner`, `prizePool`) are read from storage once into local stack variables, avoiding repeat warm SLOADs (100 gas each) and preventing stack-shuffling penalties introduced by the `unchecked` scope.
+2. **Explicit memory caching** — State variables (`targetBlock`, `winner`, `prizePool`) are read from storage once into local stack variables, avoiding repeat warm SLOADs (100 gas each) and pre[...]
 
 ---
 
@@ -325,7 +340,7 @@ slither vrf/LotteryVRFChainlink.sol
 
 ## Known Issues / Limitations
 
-- **Blockhash window** — The EVM only stores the last 256 blockhashes. If the owner delays beyond `targetBlock + 250`, the blockhash returns `bytes32(0)` and the reveal reverts. The `slashOwner()` function handles this case.
+- **Blockhash window** — The EVM only stores the last 256 blockhashes. If the owner delays beyond `targetBlock + 250`, the blockhash returns `bytes32(0)` and the reveal reverts. The `slashOwner[...]
 - **Single-winner model** — Each round produces exactly one winner who receives the entire prize pool. No partial or multi-winner distribution.
 - **No on-chain ticket cap** — There is no enforced maximum number of tickets per round; the owner must manage round sizes off-chain.
 - **VRF variant has no collateral** — The Chainlink VRF variant does not require owner collateral, since randomness is provided externally by the Chainlink oracle network.
