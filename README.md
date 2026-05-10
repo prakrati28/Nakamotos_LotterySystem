@@ -1,19 +1,19 @@
 # Nakamoto's Lottery System
 
-> On-chain commit-reveal lottery with a Next.js frontend and backend, Foundry smart contracts, and owner workflows for managing rounds.
+> On-chain commit-reveal lottery with a Next.js frontend, Foundry smart contracts, an Express backend, and owner workflows for managing rounds.
 
 ---
 
 ## Team Members
 
-| No. | Name            | Roll Number |
-| --- | --------------- | ----------- |
-| 1   | Alaya Dcruz     | 240001007   |
-| 2   | Anushka Krishan | 240001012   |
-| 3   | Prakrati Pawar  | 240001053   |
-| 4   | Vanshika Gupta  | 240001076   |
-| 5   | Kartikey Raghav | 240021008   |
-| 6   | Trijal Mathuria | 240001073   |
+| No. | Name             | Roll Number |
+|-----|------------------|-------------|
+| 1   | Alaya Dcruz      | 240001007   |
+| 2   | Anushka Krishan  | 240001012   |
+| 3   | Prakrati Pawar   | 240001053   |
+| 4   | Vanshika Gupta   | 240001076   |
+| 5   | Kartikey Raghav  | 240021008   |
+| 6   | Trijal Mathuria  | 240001073   |
 
 ---
 
@@ -27,16 +27,16 @@ A **Chainlink VRF v2.5** variant (`vrf/LotteryVRFChainlink.sol`) replaces the co
 
 ## Project Snapshot
 
-| Item            | Details                                |
-| --------------- | -------------------------------------- |
-| Project         | Project 4                              |
-| Contract Model  | Commit-Reveal Lottery (+ VRF variant)  |
-| Frontend        | Next.js 14 (App Router)                |
-| Backend         | Next.js API Routes + Prisma ORM        |
-| Smart Contracts | Solidity 0.8.20 · Foundry (forge/cast) |
-| Chain Target    | Ethereum Sepolia                       |
-| Security        | OpenZeppelin Ownable + ReentrancyGuard |
-| Static Analysis | Slither                                |
+| Item            | Details                                  |
+|-----------------|------------------------------------------|
+| Project         | Project 4                                |
+| Contract Model  | Commit-Reveal Lottery (+ VRF variant)    |
+| Frontend        | Next.js 14 (App Router)                  |
+| Backend         | Express 5 + Prisma ORM                   |
+| Smart Contracts | Solidity 0.8.20 · Foundry (forge/cast)   |
+| Chain Target    | Ethereum Sepolia                         |
+| Security        | OpenZeppelin Ownable + ReentrancyGuard   |
+| Static Analysis | Slither                                  |
 
 ---
 
@@ -68,7 +68,7 @@ Nakamotos_LotterySystem/
 │   └── gas_report.txt               # Forge gas report + optimisation analysis
 ├── script/
 │   └── Deploy.s.sol                 # Foundry deployment script
-├── lottery-frontend/                # Next.js 14 frontend (App Router) and backend (API Routes)
+├── lottery-frontend/                # Next.js 14 frontend (App Router)
 │   ├── src/
 │   │   ├── app/                     # Pages and API routes
 │   │   ├── components/              # React components
@@ -77,25 +77,32 @@ Nakamotos_LotterySystem/
 │   │   └── abi/                     # Contract ABI JSON
 │   └── prisma/
 │       └── schema.prisma            # Prisma schema for round state
+├── backend/                         # Express API server
+│   ├── server.js                    # Entry point
+│   ├── routers/ownerRouter.js       # Owner action endpoints
+│   ├── lib/                         # Shared utilities
+│   ├── middlewares/                  # Express middleware
+│   └── prisma/
+│       └── schema.prisma            # Prisma schema
 ├── slither-reports/                 # Slither static analysis output
 ├── broadcast/                       # Foundry broadcast artifacts
 ├── foundry.toml                     # Foundry configuration
 ├── remappings.txt                   # Solidity import remappings
-└── README.md
+└── README.md                       
 ```
 
 ---
 
 ## Prerequisites
 
-| Tool            | Version   | Purpose                        |
-| --------------- | --------- | ------------------------------ |
-| **Node.js**     | 18+ / 20+ | Frontend & backend runtime     |
-| **npm**         | 9+        | Package manager                |
-| **Foundry**     | Latest    | `forge`, `cast`, `anvil`       |
-| **MetaMask**    | Latest    | Browser wallet for Sepolia     |
-| **Sepolia ETH** | —         | Testnet gas for transactions   |
-| **Sepolia RPC** | —         | e.g. Alchemy / Infura endpoint |
+| Tool             | Version    | Purpose                          |
+|------------------|------------|----------------------------------|
+| **Node.js**      | 18+ / 20+ | Frontend & backend runtime       |
+| **npm**          | 9+         | Package manager                  |
+| **Foundry**      | Latest     | `forge`, `cast`, `anvil`         |
+| **MetaMask**     | Latest     | Browser wallet for Sepolia       |
+| **Sepolia ETH**  | —          | Testnet gas for transactions     |
+| **Sepolia RPC**  | —          | e.g. Alchemy / Infura endpoint   |
 
 Install Foundry (if not already):
 
@@ -116,7 +123,6 @@ cd Nakamotos_LotterySystem
 ```
 
 > If you already cloned without `--recurse-submodules`, run:
->
 > ```bash
 > git submodule update --init --recursive
 > ```
@@ -129,10 +135,17 @@ cd Nakamotos_LotterySystem
 forge install
 ```
 
-**Web App:**
+**Frontend:**
 
 ```bash
 cd lottery-frontend
+npm install
+```
+
+**Backend:**
+
+```bash
+cd backend
 npm install
 ```
 
@@ -141,16 +154,20 @@ npm install
 #### Frontend (`lottery-frontend/.env`)
 
 ```env
-NEXT_PUBLIC_CONTRACT_ADDRESS=0xYourContractAddress
+NEXT_PUBLIC_CONTRACT_ADDRESS=<deployed-contract-address>
 NEXT_PUBLIC_CHAIN_ID=11155111
-NEXT_PUBLIC_CHAIN_NAME=Sepolia
-NEXT_PUBLIC_ETHERSCAN_BASE_URL=https://sepolia.etherscan.io
-NEXT_PUBLIC_TICKET_PRICE_ETH=0.00000001
-RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_KEY
-OWNER_PRIVATE_KEY=0xYourPrivateKey
-OWNER_API_KEY=some-long-random-secret-string
-DATABASE_URL=postgresql://user:password@localhost:5432/lottochain
-DEFAULT_COLLATERAL_ETH=0.1
+NEXT_PUBLIC_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
+DATABASE_URL="file:./dev.db"
+```
+
+#### Backend (`backend/.env`)
+
+```env
+PORT=4000
+OWNER_PRIVATE_KEY=<owner-wallet-private-key>
+RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
+CONTRACT_ADDRESS=<deployed-contract-address>
+DATABASE_URL="file:./dev.db"
 ```
 
 #### Foundry (shell environment or `.env` at project root)
@@ -162,10 +179,18 @@ RPC_URL=https://eth-sepolia.g.alchemy.com/v2/<YOUR_API_KEY>
 
 ### 4. Set Up the Database (Prisma)
 
-**Web App:**
+**Frontend:**
 
 ```bash
 cd lottery-frontend
+npx prisma generate
+npx prisma db push
+```
+
+**Backend:**
+
+```bash
+cd backend
 npx prisma generate
 npx prisma db push
 ```
@@ -180,7 +205,7 @@ npx prisma db push
 forge build
 ```
 
-**Web App (TypeScript):**
+**Frontend (TypeScript):**
 
 ```bash
 cd lottery-frontend
@@ -266,7 +291,7 @@ forge script script/Deploy.s.sol:DeployLottery \
 
 ## Run the Application
 
-### Web App (Next.js)
+### Frontend (Next.js)
 
 ```bash
 cd lottery-frontend
@@ -274,6 +299,17 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+### Backend (Express)
+
+```bash
+cd backend
+node server.js
+```
+
+The backend API starts on the port defined in your `.env` (default `4000`).
+
+---
 
 ## How to Verify the Website
 
@@ -293,20 +329,28 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 The `revealAndDraw` function was identified as the most computationally expensive function and was specifically targeted for optimisation.
 
-### Before vs After
+### Before vs After (`revealAndDraw`)
 
 | Metric | `lottery.sol` (Before) | `gasOptimisedLottery.sol` (After) | Savings |
-| ------ | ---------------------- | --------------------------------- | ------- |
-| Min    | 24,517                 | 24,517                            | 0       |
-| Avg    | 44,121                 | 44,031                            | **90**  |
-| Median | 53,788                 | 53,635                            | **153** |
-| Max    | 53,788                 | 53,635                            | **153** |
+|--------|------------------------|-----------------------------------|---------|
+| Avg    | 44,121                 | 44,031                            | **90 gas** |
 
 ### Techniques Applied
 
-1. **`unchecked` block on modulo** — The Solidity 0.8+ compiler injects a zero-divisor check before every `%` operation. Since `totalParticipants > 0` is already guaranteed by the `closeSale()` phase guard, wrapping the modulo in `unchecked {}` eliminates the redundant safety opcodes.
+1. **Struct packing** — The `Round` struct is ordered so that `address winner` (20 bytes), `Phase phase` (1 byte), and `bool prizeClaimed` (1 byte) are packed into a single 32-byte storage slot. Without this packing, each field would occupy its own slot, costing an extra SLOAD (2,100 gas cold / 100 gas warm) per additional slot accessed. This is a design-time optimisation applied in both contracts.
 
-2. **Explicit memory caching** — State variables (`targetBlock`, `winner`, `prizePool`) are read from storage once into local stack variables, avoiding repeat warm SLOADs (100 gas each) and preventing stack-shuffling penalties introduced by the `unchecked` scope.
+2. **`unchecked` block on modulo** — The Solidity 0.8+ compiler injects a zero-divisor check before every `%` operation. Since `totalParticipants > 0` is already guaranteed by the `closeSale()` phase guard, wrapping the modulo in `unchecked {}` eliminates the redundant safety opcodes.
+
+3. **Explicit memory caching** — State variables (`targetBlock`, `winner`, `prizePool`) are read from storage once into local stack variables, avoiding repeat warm SLOADs (100 gas each) and preventing stack-shuffling penalties introduced by the `unchecked` scope.
+
+### Per-Technique Gas Impact
+
+| #  | Technique               | Target                                  | Gas Saved         |
+|----|-------------------------|-----------------------------------------|-------------------|
+| 1  | Struct packing          | `Round` struct (slot 0)                 | Up to 2,100 per avoided cold SLOAD |
+| 2  | `unchecked` modulo      | `winnerIndex` calculation               | ~35 gas (removes ISZERO + JUMPI opcodes) |
+| 3  | Explicit memory caching | `targetBlock`, `winner`, `prizePool`    | ~55 gas (avoids repeat warm SLOADs) |
+|    | **Total measured delta (avg)** |                                    | **90 gas**        |
 
 ---
 
